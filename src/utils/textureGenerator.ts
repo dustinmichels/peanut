@@ -11,6 +11,7 @@ export interface FleeceTextureBundle {
 export interface CorduroyTextureBundle {
   map: THREE.CanvasTexture;
   normalMap: THREE.CanvasTexture;
+  roughnessMap: THREE.CanvasTexture;
 }
 
 // Generate procedural curly fleece/bouclé plush texture
@@ -176,8 +177,8 @@ export function createFleeceTextures(size = 512): FleeceTextureBundle {
   return { map, bumpMap, normalMap, roughnessMap };
 }
 
-// Generate ribbed corduroy texture for legs and feet
-export function createCorduroyTextures(size = 256): CorduroyTextureBundle {
+// Generate ribbed corduroy texture for legs and feet matching Jellycat plush
+export function createCorduroyTextures(size = 512): CorduroyTextureBundle {
   const colorCanvas = document.createElement("canvas");
   colorCanvas.width = size;
   colorCanvas.height = size;
@@ -188,41 +189,69 @@ export function createCorduroyTextures(size = 256): CorduroyTextureBundle {
   normalCanvas.height = size;
   const normalCtx = normalCanvas.getContext("2d");
 
-  if (!colorCtx || !normalCtx) {
+  const roughnessCanvas = document.createElement("canvas");
+  roughnessCanvas.width = size;
+  roughnessCanvas.height = size;
+  const roughnessCtx = roughnessCanvas.getContext("2d");
+
+  if (!colorCtx || !normalCtx || !roughnessCtx) {
     throw new Error("Canvas 2D context not supported");
   }
 
   const colorImgData = colorCtx.createImageData(size, size);
   const normalImgData = normalCtx.createImageData(size, size);
+  const roughnessImgData = roughnessCtx.createImageData(size, size);
 
   const colorData = colorImgData.data;
   const normalData = normalImgData.data;
+  const roughnessData = roughnessImgData.data;
 
-  // Corduroy wales: vertical ribs (e.g. 16 wales across the texture)
-  const wales = 32;
+  // Corduroy wales: 24 distinct plush cords across texture
+  const wales = 24;
   const ribHeight = new Float32Array(size);
 
   for (let x = 0; x < size; x++) {
-    const angle = (x / size) * wales * Math.PI * 2;
-    // Rounded ridge profile
-    const rib = Math.pow(Math.max(0, Math.cos(angle)), 0.6);
-    ribHeight[x] = rib;
+    // Phase within wale [0, 1)
+    const u = (x / size) * wales;
+    const phase = u - Math.floor(u);
+    // Centered at 0.5; cord spans ~0.15 to 0.85 (70% cord, 30% furrow)
+    const d = Math.abs(phase - 0.5);
+    if (d < 0.38) {
+      const t = d / 0.38;
+      // Rounded cylindrical profile for the plush pile
+      ribHeight[x] = Math.pow(Math.max(0, 1.0 - t * t), 0.65);
+    } else {
+      ribHeight[x] = 0.0;
+    }
   }
 
   for (let y = 0; y < size; y++) {
     const ny = y / size;
     for (let x = 0; x < size; x++) {
       const rib = ribHeight[x];
-      // Micro fabric cross-weave noise
-      const weave = Math.sin(ny * 128 * Math.PI) * 0.08;
-      const combined = Math.max(0, Math.min(1, rib + weave));
+      // Micro fabric cross-weave and fiber noise
+      const weave = Math.sin(ny * 160 * Math.PI) * 0.05;
+      // Subtle fiber jitter
+      const jitter = ((Math.sin(x * 12.9898 + y * 78.233) * 43758.5453) % 1) * 0.04;
+      const combined = Math.max(0, Math.min(1, rib + weave + jitter));
 
-      // Brown corduroy tones:
-      // Peak: #9c6843 (warm milk chocolate brown)
-      // Valley: #5e3b22 (deep shadow furrow)
-      const r = 74 + combined * (128 - 74);
-      const g = 44 + combined * (78 - 44);
-      const b = 24 + combined * (44 - 24);
+      // Warm dusty mocha/fawn corduroy palette sampled from Jellycat reference images:
+      // Furrow: rgb(118, 82, 60)
+      // Shoulder: rgb(165, 126, 96)
+      // Ridge crest highlight: rgb(208, 170, 138)
+      // Fluffy fiber nap highlight: rgb(220, 186, 154)
+      let r: number, g: number, b: number;
+      if (combined < 0.35) {
+        const t = combined / 0.35;
+        r = 118 + t * (165 - 118);
+        g = 82 + t * (126 - 82);
+        b = 60 + t * (96 - 60);
+      } else {
+        const t = (combined - 0.35) / 0.65;
+        r = 165 + t * (214 - 165);
+        g = 126 + t * (176 - 126);
+        b = 96 + t * (144 - 96);
+      }
 
       const idx = (y * size + x) * 4;
       colorData[idx] = Math.floor(r);
@@ -230,35 +259,48 @@ export function createCorduroyTextures(size = 256): CorduroyTextureBundle {
       colorData[idx + 2] = Math.floor(b);
       colorData[idx + 3] = 255;
 
-      // Normal map for horizontal ridges
+      // Normal map with strong tangent X curvature and subtle Y cross-thread weave
       const xm1 = (x - 1 + size) % size;
       const xp1 = (x + 1) % size;
-      const dx = (ribHeight[xp1] - ribHeight[xm1]) * 3.0;
-      const len = Math.hypot(dx, 1.0);
+      const dx = (ribHeight[xp1] - ribHeight[xm1]) * 4.2;
+      const dy = Math.cos(ny * 160 * Math.PI) * 0.15;
+      const len = Math.hypot(dx, dy, 1.0);
       const nx = -dx / len;
+      const ny_val = -dy / len;
       const nz = 1.0 / len;
 
       normalData[idx] = Math.floor((nx * 0.5 + 0.5) * 255);
-      normalData[idx + 1] = 128; // flat y
+      normalData[idx + 1] = Math.floor((ny_val * 0.5 + 0.5) * 255);
       normalData[idx + 2] = Math.floor((nz * 0.5 + 0.5) * 255);
       normalData[idx + 3] = 255;
+
+      // Roughness: furrows matte (0.92), cord pile crest velvety sheen (0.68)
+      const rough = Math.floor(235 - combined * 60);
+      roughnessData[idx] = rough;
+      roughnessData[idx + 1] = rough;
+      roughnessData[idx + 2] = rough;
+      roughnessData[idx + 3] = 255;
     }
   }
 
   colorCtx.putImageData(colorImgData, 0, 0);
   normalCtx.putImageData(normalImgData, 0, 0);
+  roughnessCtx.putImageData(roughnessImgData, 0, 0);
 
   const map = new THREE.CanvasTexture(colorCanvas);
   map.colorSpace = THREE.SRGBColorSpace;
   map.wrapS = THREE.RepeatWrapping;
   map.wrapT = THREE.RepeatWrapping;
-  map.repeat.set(4, 4);
+
   const normalMap = new THREE.CanvasTexture(normalCanvas);
   normalMap.wrapS = THREE.RepeatWrapping;
   normalMap.wrapT = THREE.RepeatWrapping;
-  normalMap.repeat.set(4, 4);
 
-  return { map, normalMap };
+  const roughnessMap = new THREE.CanvasTexture(roughnessCanvas);
+  roughnessMap.wrapS = THREE.RepeatWrapping;
+  roughnessMap.wrapT = THREE.RepeatWrapping;
+
+  return { map, normalMap, roughnessMap };
 }
 
 // Generate soft radial contact shadow for floor

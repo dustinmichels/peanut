@@ -13,8 +13,26 @@ bun run build
 bun run preview
 ```
 
+## Birthday Mode
+
+Birthday Mode flashes the purple party hat pom-pom yellow-white on the three
+countdown beats before launching confetti.
+
+## Choo-Choo Mode
+
+Choo-Choo Mode has absolutely nothing to do with trains. It gives Peanut a
+small, frosty-white handlebar mustache and pointy goatee with chunky cartoon
+yeti fuzz. Both wiggle while idle and flail during bounces and jumps.
+
 ## Cowboy boots (temporarily disabled)
 
 Cowboy Mode includes procedural boots with tapered ankles, lined scalloped collars,
 rounded western toes, and underslung heels (`src/utils/cowboyBoots.ts`). They are
 currently disabled while their geometry and fit are refined.
+
+## Audio
+
+`public/audio/cowboy-yodel.mp3` is an edited excerpt of
+[“Yodel” by Astounded](https://freesound.org/people/Astounded/sounds/484841/),
+a human vocal performance released under
+[CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/).

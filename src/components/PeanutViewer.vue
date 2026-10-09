@@ -12,12 +12,22 @@ const props = defineProps<{
   fuzzIntensity: number;
   showCowboyHat?: boolean;
   showCowboyBoots?: boolean;
+  showBirthdayHat?: boolean;
+  showSillyMustache?: boolean;
+  isSitting?: boolean;
+  isLegsCrossed?: boolean;
+  isYodeling?: boolean;
 }>();
-
 const emit = defineEmits<{
   (e: "bounced"): void;
+  (e: "jumped"): void;
+  (e: "update:isSitting", val: boolean): void;
+  (e: "update:isJumping", val: boolean): void;
   (e: "update:cowboyHat", val: boolean): void;
   (e: "update:cowboyBoots", val: boolean): void;
+  (e: "update:birthdayHat", val: boolean): void;
+  (e: "update:sillyMustache", val: boolean): void;
+  (e: "update:isLegsCrossed", val: boolean): void;
 }>();
 const containerRef = useTemplateRef<HTMLDivElement>("canvasContainer");
 const hasInteracted = shallowRef(false);
@@ -30,6 +40,8 @@ const {
   setMaterialMode,
   setFuzzIntensity,
   triggerBounce,
+  isJumping,
+  triggerJump,
   toggleAutoRotate,
   toggleBreathing,
   cowboyHatActive,
@@ -38,7 +50,23 @@ const {
   cowboyBootsActive,
   setCowboyBoots,
   toggleCowboyBoots,
+  birthdayHatActive,
+  setBirthdayHat,
+  toggleBirthdayHat,
+  sillyMustacheActive,
+  setSillyMustache,
+  toggleSillyMustache,
+  triggerConfetti,
+  setYodeling,
+  isSitting: sceneSitting,
+  setSitting,
+  toggleSitting,
+  isLegsCrossed: sceneLegsCrossed,
+  setLegsCrossed,
+  toggleLegsCrossed,
+  hitTestPeanut,
 } = usePeanutScene();
+const isHoveringPeanut = shallowRef(false);
 // Differentiate drag from click
 let pointerDownTime = 0;
 let pointerDownX = 0;
@@ -53,14 +81,34 @@ function onPointerDown(e: PointerEvent) {
 function onPointerUp(e: PointerEvent) {
   const duration = performance.now() - pointerDownTime;
   const dist = Math.hypot(e.clientX - pointerDownX, e.clientY - pointerDownY);
-
-  // If tapped/clicked without substantial dragging, trigger bounce
-  // Finger touches move up to 16px on tap release
-  if (duration < 350 && dist < 16) {
-    triggerBounce();
-    emit("bounced");
-    hasInteracted.value = true;
+  // If tapped/clicked without substantial dragging and touching peanut, trigger bounce
+  // Finger touches move slightly on tap release (up to 24px)
+  if (duration < 400 && dist < 24) {
+    if (hitTestPeanut(e.clientX, e.clientY) || hitTestPeanut(pointerDownX, pointerDownY)) {
+      triggerBounce();
+      emit("bounced");
+      hasInteracted.value = true;
+    }
   }
+
+  if (e.pointerType === "mouse") {
+    isHoveringPeanut.value = hitTestPeanut(e.clientX, e.clientY);
+  }
+}
+
+function onPointerMove(e: PointerEvent) {
+  if (e.pointerType === "mouse") {
+    isHoveringPeanut.value = hitTestPeanut(e.clientX, e.clientY);
+  }
+}
+
+function onPointerLeave() {
+  isHoveringPeanut.value = false;
+}
+
+function onPointerCancel() {
+  pointerDownTime = 0;
+  isHoveringPeanut.value = false;
 }
 
 onMounted(() => {
@@ -77,6 +125,21 @@ onMounted(() => {
     }
     if (typeof props.showCowboyBoots === "boolean") {
       setCowboyBoots(props.showCowboyBoots);
+    }
+    if (typeof props.showBirthdayHat === "boolean") {
+      setBirthdayHat(props.showBirthdayHat);
+    }
+    if (typeof props.showSillyMustache === "boolean") {
+      setSillyMustache(props.showSillyMustache);
+    }
+    if (typeof props.isSitting === "boolean") {
+      setSitting(props.isSitting);
+    }
+    if (typeof props.isLegsCrossed === "boolean") {
+      setLegsCrossed(props.isLegsCrossed);
+    }
+    if (typeof props.isYodeling === "boolean") {
+      setYodeling(props.isYodeling);
     }
     setTimeout(() => {
       hasInteracted.value = true;
@@ -99,6 +162,73 @@ watch(
     }
   },
 );
+watch(
+  () => props.showBirthdayHat,
+  (val) => {
+    if (typeof val === "boolean" && val !== birthdayHatActive.value) {
+      setBirthdayHat(val);
+    }
+  },
+);
+watch(
+  () => props.showSillyMustache,
+  (val) => {
+    if (typeof val === "boolean" && val !== sillyMustacheActive.value) {
+      setSillyMustache(val);
+    }
+  },
+);
+watch(
+  () => props.isSitting,
+  (val) => {
+    if (typeof val === "boolean" && val !== sceneSitting.value) {
+      setSitting(val);
+    }
+  },
+);
+watch(
+  () => props.isLegsCrossed,
+  (val) => {
+    if (typeof val === "boolean" && val !== sceneLegsCrossed.value) {
+      setLegsCrossed(val);
+    }
+  },
+);
+watch(
+  () => props.isYodeling,
+  (val) => {
+    if (typeof val === "boolean") {
+      setYodeling(val);
+    }
+  },
+);
+watch(cowboyHatActive, (val) => {
+  if (val !== props.showCowboyHat) {
+    emit("update:cowboyHat", val);
+  }
+});
+watch(birthdayHatActive, (val) => {
+  if (val !== props.showBirthdayHat) {
+    emit("update:birthdayHat", val);
+  }
+});
+watch(sillyMustacheActive, (val) => {
+  if (val !== props.showSillyMustache) {
+    emit("update:sillyMustache", val);
+  }
+});
+watch(sceneLegsCrossed, (val) => {
+  emit("update:isLegsCrossed", val);
+});
+watch(sceneSitting, (val) => {
+  emit("update:isSitting", val);
+});
+watch(isJumping, (val) => {
+  emit("update:isJumping", val);
+  if (!val) {
+    emit("jumped");
+  }
+});
 
 defineExpose({
   setViewPreset,
@@ -114,6 +244,22 @@ defineExpose({
   cowboyBootsActive,
   setCowboyBoots,
   toggleCowboyBoots,
+  birthdayHatActive,
+  setBirthdayHat,
+  toggleBirthdayHat,
+  sillyMustacheActive,
+  setSillyMustache,
+  toggleSillyMustache,
+  triggerConfetti,
+  isSitting: sceneSitting,
+  setSitting,
+  toggleSitting,
+  hitTestPeanut,
+  isLegsCrossed: sceneLegsCrossed,
+  setLegsCrossed,
+  toggleLegsCrossed,
+  isJumping,
+  triggerJump,
 });
 </script>
 
@@ -122,14 +268,18 @@ defineExpose({
     <div
       ref="canvasContainer"
       class="canvas-container"
+      :class="{ 'peanut-hover': isHoveringPeanut }"
       role="application"
       aria-label="3D peanut model interactive stage"
       @pointerdown="onPointerDown"
       @pointerup="onPointerUp"
+      @pointermove="onPointerMove"
+      @pointerleave="onPointerLeave"
+      @pointercancel="onPointerCancel"
     />
 
     <!-- Initial interaction hint -->
-    <div v-if="isLoaded && !hasInteracted" class="hint-pill">
+    <div v-if="isLoaded && !hasInteracted && !isSitting && !isLegsCrossed" class="hint-pill">
       <span class="hint-icon" aria-hidden="true">👆</span>
       <span>Tap peanut to bounce • Drag to spin</span>
     </div>
@@ -158,6 +308,9 @@ defineExpose({
   height: 100%;
   cursor: grab;
   touch-action: none;
+}
+.canvas-container.peanut-hover {
+  cursor: pointer;
 }
 
 .canvas-container:active {

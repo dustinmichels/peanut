@@ -1,6 +1,13 @@
 <script setup lang="ts">
+defineProps<{
+  isSitting?: boolean;
+  isJumping?: boolean;
+  isLegsCrossed?: boolean;
+}>();
+
 const emit = defineEmits<{
-  (e: "bounce"): void;
+  (e: "wee"): void;
+  (e: "toggleLegsCross"): void;
 }>();
 </script>
 
@@ -18,13 +25,27 @@ const emit = defineEmits<{
 
     <div class="header-actions">
       <button
+        v-if="isSitting"
         type="button"
-        class="action-btn bounce-btn"
-        title="Make the peanut bounce and wiggle"
-        @click="emit('bounce')"
+        class="action-btn legs-cross-btn"
+        :class="{ 'btn-crossed': isLegsCrossed }"
+        :title="isLegsCrossed ? 'Uncross peanut\'s legs' : 'Cross peanut\'s legs'"
+        :disabled="isJumping"
+        @click="emit('toggleLegsCross')"
       >
-        <span class="btn-sparkle" aria-hidden="true">✨</span>
-        <span>Bounce!</span>
+        <span class="btn-icon" aria-hidden="true">{{ isLegsCrossed ? "🥨" : "🧘" }}</span>
+        <span>{{ isLegsCrossed ? "Uncross" : "Legs Cross" }}</span>
+      </button>
+      <button
+        type="button"
+        class="action-btn wee-btn"
+        :class="{ 'btn-jumping': isJumping }"
+        :title="isSitting ? 'Jump into a stand' : 'Jump into a sit'"
+        :disabled="isJumping"
+        @click="emit('wee')"
+      >
+        <span class="btn-icon" aria-hidden="true">🦘</span>
+        <span>Wee!</span>
       </button>
     </div>
   </header>
@@ -195,31 +216,84 @@ const emit = defineEmits<{
 .action-btn:active {
   transform: translateY(0) scale(0.98);
 }
-
-.bounce-btn {
-  background: linear-gradient(135deg, #fff7ec 0%, #ffeed5 100%);
-  border-color: #f4cba0;
-  color: #723e0c;
-  box-shadow: 0 4px 16px rgba(180, 110, 40, 0.14);
+.wee-btn {
+  background: linear-gradient(135deg, #fff8ee 0%, #feedd8 100%);
+  border-color: #f7d4b2;
+  color: #7c2d12;
+  box-shadow: 0 4px 16px rgba(180, 80, 20, 0.1);
 }
 
-.bounce-btn:hover {
-  background: linear-gradient(135deg, #fffbf3 0%, #fff2dd 100%);
-  border-color: #eebf8e;
+.wee-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #fffbf5 0%, #fff1df 100%);
+  border-color: #f5be8b;
+  box-shadow: 0 8px 22px rgba(180, 80, 20, 0.16);
 }
 
-.btn-sparkle {
-  font-size: 0.95rem;
-  animation: sparkle-twinkle 2s ease-in-out infinite;
+.wee-btn.btn-jumping {
+  background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%);
+  border-color: #ea580c;
+  color: #431407;
+  transform: translateY(-2px) scale(0.97);
+  box-shadow: 0 4px 14px rgba(234, 88, 12, 0.22);
 }
 
-@keyframes sparkle-twinkle {
-  0%,
-  100% {
-    transform: scale(1) rotate(0deg);
+.action-btn:disabled {
+  opacity: 0.72;
+  cursor: default;
+  transform: none;
+}
+
+.wee-btn:hover:not(:disabled) .btn-icon {
+  transform: scale(1.18);
+}
+
+.btn-icon {
+  font-size: 1.05rem;
+  line-height: 1;
+  display: inline-block;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.legs-cross-btn {
+  background: linear-gradient(135deg, #fbf7ff 0%, #f3ebfa 100%);
+  border-color: #dfceee;
+  color: #55276d;
+  box-shadow: 0 4px 16px rgba(110, 50, 150, 0.1);
+  animation: btn-appear 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.legs-cross-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #fdfaff 0%, #f8f0fc 100%);
+  border-color: #cdb2e4;
+  box-shadow: 0 8px 22px rgba(110, 50, 150, 0.16);
+}
+
+.legs-cross-btn.btn-crossed {
+  background: linear-gradient(135deg, #eddff7 0%, #e2cbf2 100%);
+  border-color: #b993d9;
+  color: #401458;
+  box-shadow:
+    0 4px 16px rgba(130, 60, 180, 0.2),
+    inset 0 1px 2px rgba(255, 255, 255, 0.8);
+}
+
+.legs-cross-btn.btn-crossed:hover {
+  background: linear-gradient(135deg, #f4e8fc 0%, #ebd3f8 100%);
+  border-color: #ab82ce;
+}
+
+.legs-cross-btn:hover:not(:disabled) .btn-icon {
+  transform: scale(1.18);
+}
+
+@keyframes btn-appear {
+  0% {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.92);
   }
-  50% {
-    transform: scale(1.2) rotate(15deg);
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -255,6 +329,7 @@ const emit = defineEmits<{
   .header-actions {
     gap: 0.35rem;
     flex-shrink: 0;
+    flex-wrap: nowrap;
   }
   .action-btn {
     padding: 0.45rem 0.85rem;
@@ -266,28 +341,33 @@ const emit = defineEmits<{
 
 @media (max-width: 400px) {
   .app-header {
-    padding: calc(0.45rem + env(safe-area-inset-top, 0px)) 0.6rem 0.45rem;
-    gap: 0.35rem;
+    padding: calc(0.38rem + env(safe-area-inset-top, 0px)) 0.45rem 0.38rem;
+    gap: 0.25rem;
   }
   .brand-badge {
-    padding: 0.35rem 0.65rem 0.4rem 0.5rem;
-    gap: 0.45rem;
-    border-radius: 16px;
+    padding: 0.28rem 0.42rem 0.32rem 0.38rem;
+    gap: 0.3rem;
+    border-radius: 14px;
   }
   .peanut-avatar {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
   }
   .peanut-icon {
-    font-size: 1.2rem;
+    font-size: 1.05rem;
   }
   .brand-title {
-    font-size: 0.95rem;
+    font-size: 0.78rem;
+    letter-spacing: -0.01em;
   }
   .action-btn {
-    padding: 0.35rem 0.55rem;
-    font-size: 0.74rem;
-    gap: 0.25rem;
+    padding: 0.28rem 0.4rem;
+    font-size: 0.67rem;
+    gap: 0.16rem;
+    min-height: 29px;
+  }
+  .header-actions {
+    gap: 0.18rem;
   }
 }
 </style>

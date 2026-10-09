@@ -12,8 +12,8 @@ export interface CameraPresetConfig {
 const VIEW_PRESETS: Record<ViewPresetId, CameraPresetConfig> = {
   // Matches the exact 3/4 hero camera angle in the reference image
   photo: {
-    position: new THREE.Vector3(2.8, 2.4, 6.7),
-    target: new THREE.Vector3(0.0, 1.65, 0.0),
+    position: new THREE.Vector3(3.3, 2.5, 8.0),
+    target: new THREE.Vector3(0.0, 1.85, 0.0),
   },
   front: {
     position: new THREE.Vector3(0.0, 1.9, 6.7),
@@ -60,11 +60,21 @@ export function usePeanutScene() {
   let bounceStartTime = 0;
   const bounceDuration = 750; // ms
 
+  // Jump state
+  const isJumping = shallowRef(false);
+  let jumpStartTime = 0;
+  const jumpDuration = 1250; // ms
+  let jumpTargetSitting = true;
   // Scene animation parameters
   let autoRotateActive = shallowRef(false);
   let breathingActive = shallowRef(true);
   const cowboyHatActive = shallowRef(false);
   const cowboyBootsActive = shallowRef(false);
+  const birthdayHatActive = shallowRef(false);
+  const sillyMustacheActive = shallowRef(false);
+  const isSitting = shallowRef(false);
+  const isLegsCrossed = shallowRef(false);
+  const isYodeling = shallowRef(false);
   function init(container: HTMLElement) {
     // 1. Scene & Background
     scene = new THREE.Scene();
@@ -96,7 +106,7 @@ export function usePeanutScene() {
     controls.target.copy(initialView.target);
     controls.maxPolarAngle = Math.PI / 2 + 0.02; // prevent clipping beneath floor
     controls.minDistance = 1.2;
-    controls.maxDistance = 10.0;
+    controls.maxDistance = 24.0;
     controls.touches = {
       ONE: THREE.TOUCH.ROTATE,
       TWO: THREE.TOUCH.DOLLY_PAN,
@@ -148,10 +158,14 @@ export function usePeanutScene() {
     groundMesh.receiveShadow = true;
     scene.add(groundMesh);
 
-    // 7. Peanut Character Model
-    peanutHandle = createPeanutModel();
+    peanutHandle = createPeanutModel(scene);
     peanutHandle.setCowboyHat(cowboyHatActive.value);
     peanutHandle.setCowboyBoots(cowboyBootsActive.value);
+    peanutHandle.setBirthdayHat(birthdayHatActive.value);
+    peanutHandle.setSillyMustache(sillyMustacheActive.value);
+    peanutHandle.setSitting(isSitting.value);
+    peanutHandle.setLegsCrossed(isLegsCrossed.value);
+    peanutHandle.setYodeling(isYodeling.value);
     scene.add(peanutHandle.group);
 
     // 8. Responsive Projection & Resize Observer
@@ -218,9 +232,24 @@ export function usePeanutScene() {
         controls.update();
       }
 
+      // Jump progress
+      let jumpProg = 0;
+      if (jumpStartTime > 0) {
+        const now = performance.now();
+        const diff = now - jumpStartTime;
+        if (diff < jumpDuration) {
+          jumpProg = diff / jumpDuration;
+        } else {
+          jumpProg = 1.0;
+          jumpStartTime = 0;
+          isJumping.value = false;
+          setSitting(jumpTargetSitting);
+        }
+      }
+
       // Bounce progress
       let bounceProg = 0;
-      if (bounceStartTime > 0) {
+      if (bounceStartTime > 0 && !isJumping.value) {
         const now = performance.now();
         const diff = now - bounceStartTime;
         if (diff < bounceDuration) {
@@ -233,7 +262,7 @@ export function usePeanutScene() {
 
       // Animate peanut model
       if (peanutHandle) {
-        peanutHandle.animate(elapsed, breathingActive.value, bounceProg, delta);
+        peanutHandle.animate(elapsed, breathingActive.value, bounceProg, delta, jumpProg);
       }
 
       if (renderer && scene && camera) {
@@ -316,8 +345,37 @@ export function usePeanutScene() {
   }
 
   function triggerBounce() {
+    if (isJumping.value) return;
     bounceStartTime = performance.now();
     isBouncing.value = true;
+  }
+
+  function triggerJump(targetSitting = true) {
+    if (isJumping.value) return;
+    isBouncing.value = false;
+    bounceStartTime = 0;
+    jumpStartTime = performance.now();
+    jumpTargetSitting = targetSitting;
+    isJumping.value = true;
+    isLegsCrossed.value = false;
+    peanutHandle?.setLegsCrossed(false);
+    peanutHandle?.setSitting(targetSitting);
+  }
+  const raycaster = new THREE.Raycaster();
+  const raycastPointer = new THREE.Vector2();
+
+  function hitTestPeanut(clientX: number, clientY: number): boolean {
+    if (!renderer || !camera || !peanutHandle) return false;
+    const rect = renderer.domElement.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) return false;
+
+    raycastPointer.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+    raycastPointer.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+
+    raycaster.setFromCamera(raycastPointer, camera);
+    const intersects = raycaster.intersectObject(peanutHandle.group, true);
+
+    return intersects.some((hit) => hit.object.visible && !hit.object.userData?.isShadow);
   }
 
   function toggleAutoRotate(val?: boolean) {
@@ -340,7 +398,39 @@ export function usePeanutScene() {
     setCowboyHat(next);
     return next;
   }
+  function setBirthdayHat(val: boolean) {
+    birthdayHatActive.value = val;
+    if (peanutHandle) {
+      peanutHandle.setBirthdayHat(val);
+    }
+  }
 
+  function toggleBirthdayHat(val?: boolean): boolean {
+    const next = typeof val === "boolean" ? val : !birthdayHatActive.value;
+    setBirthdayHat(next);
+    return next;
+  }
+
+  function setSillyMustache(val: boolean) {
+    sillyMustacheActive.value = val;
+    if (peanutHandle) {
+      peanutHandle.setSillyMustache(val);
+    }
+  }
+
+  function toggleSillyMustache(val?: boolean): boolean {
+    const next = typeof val === "boolean" ? val : !sillyMustacheActive.value;
+    setSillyMustache(next);
+    return next;
+  }
+
+  function triggerConfetti() {
+    peanutHandle?.triggerConfetti();
+  }
+  function setYodeling(val: boolean) {
+    isYodeling.value = val;
+    peanutHandle?.setYodeling(val);
+  }
   function setCowboyBoots(val: boolean) {
     cowboyBootsActive.value = val;
     if (peanutHandle) {
@@ -351,6 +441,35 @@ export function usePeanutScene() {
   function toggleCowboyBoots(val?: boolean): boolean {
     const next = typeof val === "boolean" ? val : !cowboyBootsActive.value;
     setCowboyBoots(next);
+    return next;
+  }
+
+  function setSitting(val: boolean) {
+    isSitting.value = val;
+    if (!val) {
+      isLegsCrossed.value = false;
+      peanutHandle?.setLegsCrossed(false);
+    }
+    peanutHandle?.setSitting(val);
+  }
+
+  function toggleSitting(val?: boolean): boolean {
+    const next = typeof val === "boolean" ? val : !isSitting.value;
+    setSitting(next);
+    return next;
+  }
+
+  function setLegsCrossed(val: boolean) {
+    if (val && !isSitting.value) {
+      setSitting(true);
+    }
+    isLegsCrossed.value = val;
+    peanutHandle?.setLegsCrossed(val);
+  }
+
+  function toggleLegsCrossed(val?: boolean): boolean {
+    const next = typeof val === "boolean" ? val : !isLegsCrossed.value;
+    setLegsCrossed(next);
     return next;
   }
 
@@ -390,6 +509,8 @@ export function usePeanutScene() {
   return {
     isLoaded,
     isBouncing,
+    isJumping,
+    triggerJump,
     autoRotateActive,
     breathingActive,
     init,
@@ -406,6 +527,22 @@ export function usePeanutScene() {
     cowboyBootsActive,
     setCowboyBoots,
     toggleCowboyBoots,
+    birthdayHatActive,
+    setBirthdayHat,
+    toggleBirthdayHat,
+    sillyMustacheActive,
+    setSillyMustache,
+    toggleSillyMustache,
+    triggerConfetti,
+    isYodeling,
+    setYodeling,
+    isSitting,
+    setSitting,
+    toggleSitting,
+    isLegsCrossed,
+    setLegsCrossed,
+    toggleLegsCrossed,
     dispose,
+    hitTestPeanut,
   };
 }

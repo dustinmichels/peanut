@@ -6,9 +6,60 @@ export interface CowboyHatHandle {
   setVisible: (visible: boolean) => void;
   toggle: () => boolean;
   setMaterialMode: (mode: MaterialModeId) => void;
-  update: (deltaSeconds: number) => void;
+  update: (deltaSeconds: number, jumpProgress?: number) => void;
   dispose: () => void;
   readonly isVisible: boolean;
+}
+
+/**
+ * Calculates aerodynamic inertia lift and tilt for the cowboy hat during a jump.
+ * Hat lifts up slightly above the head during ascent/apex, then falls back down
+ * into seated rest position as peanut lands.
+ */
+export function getHatJumpOffset(p: number): { liftY: number; tiltX: number; tiltZ: number } {
+  if (p <= 0 || p >= 1.0) {
+    return { liftY: 0, tiltX: 0, tiltZ: 0 };
+  }
+
+  let liftY = 0;
+  let tiltX = 0;
+  let tiltZ = 0;
+
+  if (p < 0.12) {
+    // Crouch anticipation - hat dips down minutely
+    const t = p / 0.12;
+    liftY = -0.02 * Math.sin(t * Math.PI);
+  } else if (p < 0.45) {
+    // Launch: hat lifts up into the air above the head
+    const t = (p - 0.12) / (0.45 - 0.12);
+    const s = t * t * (3 - 2 * t);
+    liftY = s * 0.48;
+    tiltX = -0.16 * s;
+    tiltZ = 0.08 * s;
+  } else if (p < 0.65) {
+    // Apex float: hat hovers slightly above head with subtle aerodynamic flutter
+    const t = (p - 0.45) / (0.65 - 0.45);
+    const floatWobble = Math.sin(t * Math.PI) * 0.04;
+    liftY = 0.48 + floatWobble;
+    tiltX = -0.16 + Math.sin(t * Math.PI) * 0.03;
+    tiltZ = 0.08 - Math.sin(t * Math.PI) * 0.02;
+  } else if (p < 0.88) {
+    // Fall: hat accelerates downward towards head
+    const t = (p - 0.65) / (0.88 - 0.65);
+    const s = t * t * (3 - 2 * t);
+    liftY = 0.48 * (1 - s);
+    tiltX = -0.16 * (1 - s);
+    tiltZ = 0.08 * (1 - s);
+  } else {
+    // Landing settle: gentle cushion bounce back into seated position
+    const t = (p - 0.88) / (1.0 - 0.88);
+    const settle = Math.sin(t * Math.PI) * 0.04 * (1 - t);
+    liftY = settle;
+    tiltX = settle * -0.5;
+    tiltZ = settle * 0.3;
+  }
+
+  return { liftY, tiltX, tiltZ };
 }
 
 /**
@@ -468,7 +519,7 @@ export function createCowboyHat(): CowboyHatHandle {
     return isVisible;
   }
 
-  function update(deltaSeconds: number) {
+  function update(deltaSeconds: number, jumpProgress = 0) {
     const dt = Math.min(deltaSeconds, 0.1);
 
     if (isVisible) {
@@ -487,11 +538,19 @@ export function createCowboyHat(): CowboyHatHandle {
     if (!hatRoot.visible) return;
 
     if (animProgress >= 1.0) {
-      // Normal rest state
-      hatRoot.position.set(0, restY, restZ);
-      hatRoot.scale.set(1, 1, 1);
-      hatRoot.rotation.x = restRotX;
-      hatRoot.rotation.z = restRotZ;
+      if (jumpProgress > 0 && jumpProgress <= 1.0) {
+        const { liftY, tiltX, tiltZ } = getHatJumpOffset(jumpProgress);
+        hatRoot.position.set(0, restY + liftY, restZ);
+        hatRoot.scale.set(1, 1, 1);
+        hatRoot.rotation.x = restRotX + tiltX;
+        hatRoot.rotation.z = restRotZ + tiltZ;
+      } else {
+        // Normal rest state
+        hatRoot.position.set(0, restY, restZ);
+        hatRoot.scale.set(1, 1, 1);
+        hatRoot.rotation.x = restRotX;
+        hatRoot.rotation.z = restRotZ;
+      }
     } else {
       // Animated pop-in or lift-off
       const eased = easeOutBack(animProgress);
@@ -505,7 +564,6 @@ export function createCowboyHat(): CowboyHatHandle {
       hatRoot.rotation.z = restRotZ - (1.0 - animProgress) * 0.15;
     }
   }
-
   function dispose() {
     brimGeom.dispose();
     crownGeom.dispose();

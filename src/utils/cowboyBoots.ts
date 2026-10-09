@@ -12,196 +12,143 @@ export interface CowboyBootsHandle {
   readonly isVisible: boolean;
 }
 
-/**
- * Creates the tall boot shaft with western scalloped collar (dip in front/back, peaks on sides).
- * Dual-layered for realistic cut-leather thickness.
- */
+/** Tapered ankle and flared, scalloped collar with a visible leather lining. */
 function createShaftGeometry(isRight: boolean): THREE.BufferGeometry {
   const geom = new THREE.BufferGeometry();
-  const radialSegments = 32;
-  const heightSegments = 14;
-  const thickness = 0.016;
-
+  const radialSegments = 40;
+  const heightSegments = 12;
   const vertices: number[] = [];
   const uvs: number[] = [];
   const indices: number[] = [];
+  const stride = radialSegments;
+  const layerSize = (heightSegments + 1) * stride;
 
-  function getPoint(u: number, v: number, layerOffset: number) {
-    const theta = u * Math.PI * 2;
-    const sinT = Math.sin(theta);
-    const cosT = Math.cos(theta);
-
-    // Height from ankle (y=0.12) up to collar (y=0.54)
-    const yBase = 0.12 + v * 0.42;
-
-    // Classic western scalloped collar:
-    // Front (cosT > 0) dips down, back dips down, sides (sinT) peak up
-    const scallop = -Math.cos(2 * theta) * 0.045 * Math.pow(v, 2.2);
-    const y = yBase + scallop;
-
-    // Elliptical cross section, slightly wider along Z and expanding toward top
-    const rx = 0.108 + v * 0.024 + layerOffset;
-    const rz = 0.125 + v * 0.026 + layerOffset;
-
-    // Subtle anatomical inward tilt
-    const xIncline = (isRight ? -0.01 : 0.01) * v;
-    const x = sinT * rx + xIncline;
-    const z = cosT * rz;
-
-    return { x, y, z };
-  }
-
-  const stride = radialSegments + 1;
-
-  // 1. Outer surface
-  for (let j = 0; j <= heightSegments; j++) {
-    const v = j / heightSegments;
-    for (let i = 0; i <= radialSegments; i++) {
-      const u = i / radialSegments;
-      const pt = getPoint(u, v, thickness * 0.5);
-      vertices.push(pt.x, pt.y, pt.z);
-      uvs.push(u, v);
+  for (let layer = 0; layer < 2; layer++) {
+    for (let j = 0; j <= heightSegments; j++) {
+      const v = j / heightSegments;
+      const flare = v * v;
+      const ankle = Math.sin(Math.PI * v);
+      const rx = 0.137 + 0.028 * flare - 0.018 * ankle - layer * 0.012;
+      const rz = 0.155 + 0.030 * flare - 0.018 * ankle - layer * 0.012;
+      for (let i = 0; i < radialSegments; i++) {
+        const theta = i / radialSegments * Math.PI * 2;
+        const front = Math.max(0, Math.cos(theta));
+        const y = 0.155 + v * 0.505 + front * 0.035 * (1 - v)
+          - Math.cos(2 * theta) * 0.04 * v * v;
+        vertices.push(
+          Math.sin(theta) * rx + (isRight ? -0.012 : 0.012) * v,
+          y,
+          Math.cos(theta) * rz - 0.012 * (1 - v)
+        );
+        uvs.push(i / radialSegments, v);
+      }
+    }
+    for (let j = 0; j < heightSegments; j++) {
+      for (let i = 0; i < radialSegments; i++) {
+        const next = (i + 1) % radialSegments;
+        const a = layer * layerSize + j * stride + i;
+        const b = a + stride;
+        const d = layer * layerSize + j * stride + next;
+        const c = d + stride;
+        if (layer === 0) indices.push(a, d, b, d, c, b);
+        else indices.push(a, b, d, d, b, c);
+      }
     }
   }
-
-  for (let j = 0; j < heightSegments; j++) {
-    for (let i = 0; i < radialSegments; i++) {
-      const a = j * stride + i;
-      const b = (j + 1) * stride + i;
-      const c = (j + 1) * stride + (i + 1);
-      const d = j * stride + (i + 1);
-      indices.push(a, b, d);
-      indices.push(d, b, c);
-    }
-  }
-
-  // 2. Inner surface
-  const innerOffset = vertices.length / 3;
-  for (let j = 0; j <= heightSegments; j++) {
-    const v = j / heightSegments;
-    for (let i = 0; i <= radialSegments; i++) {
-      const u = i / radialSegments;
-      const pt = getPoint(u, v, -thickness * 0.5);
-      vertices.push(pt.x, pt.y, pt.z);
-      uvs.push(u, v);
-    }
-  }
-
-  for (let j = 0; j < heightSegments; j++) {
-    for (let i = 0; i < radialSegments; i++) {
-      const a = innerOffset + j * stride + i;
-      const b = innerOffset + (j + 1) * stride + i;
-      const c = innerOffset + (j + 1) * stride + (i + 1);
-      const d = innerOffset + j * stride + (i + 1);
-      indices.push(a, d, b);
-      indices.push(d, c, b);
-    }
-  }
-
-  // 3. Top rim connecting outer and inner surfaces (facing +Y)
-  const topOuterRow = heightSegments * stride;
-  const topInnerRow = innerOffset + heightSegments * stride;
+  // Join the outer leather to the lining without closing the opening.
   for (let i = 0; i < radialSegments; i++) {
-    const a = topOuterRow + i;
-    const b = topOuterRow + (i + 1);
-    const c = topInnerRow + (i + 1);
-    const d = topInnerRow + i;
-    indices.push(a, d, b);
-    indices.push(d, c, b);
+    const a = heightSegments * stride + i;
+    const b = heightSegments * stride + (i + 1) % radialSegments;
+    indices.push(a, b, a + layerSize, b, b + layerSize, a + layerSize);
   }
-
   geom.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
   geom.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
   geom.setIndex(indices);
   geom.computeVertexNormals();
-
   return geom;
 }
 
+// Shared last keeps the leather seated on the welt from heel through toe spring.
+function bootProfile(t: number) {
+  const heelRound = Math.sqrt(Math.max(0, 1 - Math.pow(Math.max(0, (0.16 - t) / 0.17), 2)));
+  const toe = THREE.MathUtils.smoothstep(t, 0.64, 1);
+  const halfW = (0.143 + 0.017 * Math.sin(Math.PI * t) - 0.12 * toe) * heelRound;
+  const soleY = 0.032 + 0.053 * (1 - THREE.MathUtils.smoothstep(t, 0.28, 0.62))
+    + 0.028 * Math.pow(Math.max(0, (t - 0.72) / 0.28), 2);
+  const topY = 0.17 + 0.12 * Math.exp(-Math.pow((t - 0.34) / 0.28, 2))
+    - 0.055 * THREE.MathUtils.smoothstep(t, 0.55, 1);
+  return { halfW, soleY, topY };
+}
+
 /**
- * Creates the vamp (foot upper), snip toe box with toe spring, instep bridge, and heel counter.
+ * Creates the boot foot (vamp, instep, toe box with classic cowboy toe spring).
+ * Clean, simplified lofted geometry.
  */
-function createVampGeometry(isRight: boolean): THREE.BufferGeometry {
+function createFootGeometry(isRight: boolean): THREE.BufferGeometry {
   const geom = new THREE.BufferGeometry();
-  const zSegments = 16;
-  const crossSegments = 16;
+  const zSegments = 40;
+  const crossSegments = 24;
+
   const vertices: number[] = [];
   const uvs: number[] = [];
   const indices: number[] = [];
 
-  const zStart = -0.16;
-  const zEnd = 0.28;
+  // Foot extends from heel to toe tip
+  const zStart = -0.22;
+  const zEnd = 0.40;
 
   for (let j = 0; j <= zSegments; j++) {
     const t = j / zSegments;
     const z = zStart + t * (zEnd - zStart);
 
-    let yBottom = 0.02;
-    let yTop = 0.16;
-    let halfW = 0.10;
+    const { halfW, soleY, topY: yTop } = bootProfile(t);
+    const yBottom = soleY - 0.006;
 
-    if (t < 0.28) {
-      // Heel counter zone
-      const s = t / 0.28;
-      yBottom = 0.065 - s * 0.015;
-      yTop = 0.16 - s * 0.01;
-      halfW = 0.095 - s * 0.01;
-    } else if (t < 0.58) {
-      // Arch and instep throat zone
-      const s = (t - 0.28) / 0.30;
-      yBottom = 0.05 - s * 0.03;
-      yTop = 0.15 - s * 0.03;
-      halfW = 0.085 + s * 0.04;
-    } else {
-      // Ball of foot and snip toe zone with toe spring
-      const s = (t - 0.58) / 0.42;
-      yBottom = 0.02 + Math.pow(s, 2.0) * 0.03;
-      yTop = 0.12 - s * 0.045;
-      halfW = 0.125 - s * 0.082;
-    }
+    const xIncline = (isRight ? -0.015 : 0.015) * Math.max(0, (t - 0.5) / 0.5);
+    const height = yTop - yBottom;
 
-    const xIncline = (isRight ? -0.012 : 0.012) * Math.max(0, (t - 0.5) / 0.5);
-    const yMid = (yTop + yBottom) * 0.5;
-    const yRad = (yTop - yBottom) * 0.5;
-
-    for (let i = 0; i <= crossSegments; i++) {
+    for (let i = 0; i < crossSegments; i++) {
       const u = i / crossSegments;
       const phi = u * Math.PI * 2;
       const x = Math.sin(phi) * halfW + xIncline;
-      const y = yMid + Math.cos(phi) * yRad;
+      const y = yBottom + Math.max(0, Math.cos(phi)) * height;
+
       vertices.push(x, y, z);
       uvs.push(u, t);
     }
   }
 
-  const stride = crossSegments + 1;
+  const stride = crossSegments;
   for (let j = 0; j < zSegments; j++) {
     for (let i = 0; i < crossSegments; i++) {
       const a = j * stride + i;
       const b = (j + 1) * stride + i;
-      const c = (j + 1) * stride + (i + 1);
-      const d = j * stride + (i + 1);
+      const c = (j + 1) * stride + (i + 1) % crossSegments;
+      const d = j * stride + (i + 1) % crossSegments;
+
       indices.push(a, b, d);
       indices.push(d, b, c);
     }
   }
 
-  // Back cap at heel counter (j = 0, facing -Z)
+  // Back cap at heel
   const backCenterIdx = vertices.length / 3;
-  vertices.push(0, 0.10, zStart);
+  const back = bootProfile(0);
+  vertices.push(0, (back.soleY + back.topY) * 0.5, zStart);
   uvs.push(0.5, 0);
   for (let i = 0; i < crossSegments; i++) {
-    indices.push(backCenterIdx, i + 1, i);
+    indices.push(backCenterIdx, i, (i + 1) % crossSegments);
   }
 
-  // Front cap at toe tip (j = zSegments, facing +Z)
+  // Front cap at toe tip
   const frontCenterIdx = vertices.length / 3;
   const frontRowStart = zSegments * stride;
-  const frontXIncline = isRight ? -0.012 : 0.012;
-  vertices.push(frontXIncline, 0.06, zEnd);
+  const frontXIncline = isRight ? -0.015 : 0.015;
+  const front = bootProfile(1);
+  vertices.push(frontXIncline, (front.soleY + front.topY) * 0.5, zEnd);
   uvs.push(0.5, 1);
   for (let i = 0; i < crossSegments; i++) {
-    indices.push(frontCenterIdx, frontRowStart + i, frontRowStart + i + 1);
+    indices.push(frontCenterIdx, frontRowStart + (i + 1) % crossSegments, frontRowStart + i);
   }
 
   geom.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
@@ -213,55 +160,31 @@ function createVampGeometry(isRight: boolean): THREE.BufferGeometry {
 }
 
 /**
- * Creates the leather welt outsole with arch shank lift and toe spring.
+ * Creates the boot outsole welt with arch lift and toe spring.
  */
 function createSoleGeometry(isRight: boolean): THREE.BufferGeometry {
   const geom = new THREE.BufferGeometry();
-  const zSegments = 16;
+  const zSegments = 40;
+
   const vertices: number[] = [];
   const uvs: number[] = [];
   const indices: number[] = [];
 
-  const zStart = -0.165;
-  const zEnd = 0.295;
+  const zStart = -0.225;
+  const zEnd = 0.405;
 
   for (let j = 0; j <= zSegments; j++) {
     const t = j / zSegments;
     const z = zStart + t * (zEnd - zStart);
 
-    let halfW = 0.10;
-    let yTop = 0.025;
-    let yBottom = 0.0;
+    const profile = bootProfile(t);
+    const halfW = profile.halfW + 0.012;
+    const yTop = profile.soleY;
+    const yBottom = yTop - 0.032;
 
-    if (t < 0.28) {
-      // Heel zone
-      const s = t / 0.28;
-      halfW = 0.10 - s * 0.01;
-      yTop = 0.07;
-      yBottom = 0.05;
-    } else if (t < 0.52) {
-      // Arch zone: lifted off ground
-      const s = (t - 0.28) / 0.24;
-      halfW = 0.09 + s * 0.045;
-      yTop = 0.06 - s * 0.035;
-      yBottom = 0.045 - s * 0.035;
-    } else if (t < 0.76) {
-      // Ball of foot: flat on floor
-      const s = (t - 0.52) / 0.24;
-      halfW = 0.135 - s * 0.03;
-      yTop = 0.025;
-      yBottom = 0.0;
-    } else {
-      // Toe spring zone: curves upward
-      const s = (t - 0.76) / 0.24;
-      halfW = 0.105 - s * 0.055;
-      yTop = 0.025 + Math.pow(s, 2.0) * 0.035;
-      yBottom = Math.pow(s, 2.0) * 0.035;
-    }
+    const xIncline = (isRight ? -0.015 : 0.015) * Math.max(0, (t - 0.5) / 0.5);
 
-    const xIncline = (isRight ? -0.012 : 0.012) * Math.max(0, (t - 0.6) / 0.4);
-
-    // 0: left top, 1: right top, 2: right bottom, 3: left bottom
+    // 0: top-left, 1: top-right, 2: bottom-right, 3: bottom-left
     vertices.push(-halfW + xIncline, yTop, z);
     vertices.push(halfW + xIncline, yTop, z);
     vertices.push(halfW + xIncline, yBottom, z);
@@ -274,19 +197,16 @@ function createSoleGeometry(isRight: boolean): THREE.BufferGeometry {
     const r0 = j * 4;
     const r1 = (j + 1) * 4;
 
-    // Top face (facing +Y)
+    // Top
     indices.push(r0 + 0, r1 + 0, r1 + 1);
     indices.push(r0 + 0, r1 + 1, r0 + 1);
-
-    // Right welt wall (facing +X)
+    // Right welt
     indices.push(r0 + 1, r1 + 1, r1 + 2);
     indices.push(r0 + 1, r1 + 2, r0 + 2);
-
-    // Bottom face (facing -Y)
+    // Bottom
     indices.push(r0 + 2, r1 + 2, r1 + 3);
     indices.push(r0 + 2, r1 + 3, r0 + 3);
-
-    // Left welt wall (facing -X)
+    // Left welt
     indices.push(r0 + 3, r1 + 3, r1 + 0);
     indices.push(r0 + 3, r1 + 0, r0 + 0);
   }
@@ -309,12 +229,12 @@ function createSoleGeometry(isRight: boolean): THREE.BufferGeometry {
 }
 
 /**
- * Creates the stacked western riding heel with underslung forward pitch.
+ * Creates the chunky western riding heel with forward underslung slant.
  */
 function createHeelGeometry(): THREE.BufferGeometry {
   const geom = new THREE.BufferGeometry();
-  const radialSegments = 16;
-  const heightSegments = 6;
+  const radialSegments = 32;
+  const heightSegments = 3;
 
   const vertices: number[] = [];
   const uvs: number[] = [];
@@ -322,23 +242,22 @@ function createHeelGeometry(): THREE.BufferGeometry {
 
   for (let j = 0; j <= heightSegments; j++) {
     const v = j / heightSegments;
-    const y = v * 0.065;
+    const y = v * 0.085;
 
-    // Underslung breast front z slants from -0.045 (bottom) to -0.02 (top)
-    const zFront = -0.045 + v * 0.025;
-    const zBack = -0.160 - v * 0.005;
+    // Underslung slant: bottom is shifted slightly forward
+    const zFront = -0.055 + v * 0.015;
+    const zBack = -0.185 - v * 0.025;
     const zCenter = (zFront + zBack) * 0.5;
     const rz = (zFront - zBack) * 0.5;
-    const rx = 0.088 + v * 0.010;
+    const rx = 0.105 + v * 0.025;
 
     for (let i = 0; i <= radialSegments; i++) {
       const u = i / radialSegments;
       const angle = u * Math.PI * 2;
-      const x = Math.sin(angle) * rx;
-      let z = zCenter + Math.cos(angle) * rz;
-
-      // Flatten breast face at front
-      if (z > zFront) z = zFront;
+      const sin = Math.sin(angle);
+      const cos = Math.cos(angle);
+      const x = Math.sign(sin) * Math.pow(Math.abs(sin), 0.65) * rx;
+      const z = zCenter + Math.sign(cos) * Math.pow(Math.abs(cos), 0.65) * rz;
 
       vertices.push(x, y, z);
       uvs.push(u, v);
@@ -352,17 +271,18 @@ function createHeelGeometry(): THREE.BufferGeometry {
       const b = (j + 1) * stride + i;
       const c = (j + 1) * stride + (i + 1);
       const d = j * stride + (i + 1);
-      indices.push(a, b, d);
-      indices.push(d, b, c);
+
+      indices.push(a, d, b);
+      indices.push(d, c, b);
     }
   }
 
-  // Bottom cap (facing -Y)
+  // Bottom heel cap
   const bottomCenterIdx = vertices.length / 3;
-  vertices.push(0, 0, -0.10);
+  vertices.push(0, 0, -0.12);
   uvs.push(0.5, 0);
   for (let i = 0; i < radialSegments; i++) {
-    indices.push(bottomCenterIdx, i + 1, i);
+    indices.push(bottomCenterIdx, i, i + 1);
   }
 
   geom.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
@@ -374,176 +294,36 @@ function createHeelGeometry(): THREE.BufferGeometry {
 }
 
 /**
- * Creates side pull loops folded over the scalloped rim.
+ * Creates a clean pull tab loop on the side of the shaft collar.
  */
-function createPullStrapMesh(isRightSide: boolean, material: THREE.Material): THREE.Mesh {
+function createPullTabMesh(isRightSide: boolean, material: THREE.Material): THREE.Mesh {
   const shape = new THREE.Shape();
-  shape.moveTo(0.115, 0.53);
-  shape.lineTo(0.115, 0.58);
-  shape.quadraticCurveTo(0.125, 0.595, 0.142, 0.585);
-  shape.lineTo(0.142, 0.48);
-  shape.lineTo(0.134, 0.48);
-  shape.lineTo(0.134, 0.575);
-  shape.quadraticCurveTo(0.125, 0.585, 0.123, 0.575);
-  shape.lineTo(0.123, 0.53);
+  shape.moveTo(0, 0);
+  shape.lineTo(0, 0.09);
+  shape.quadraticCurveTo(0.015, 0.11, 0.03, 0.09);
+  shape.lineTo(0.03, 0);
   shape.closePath();
 
   const geom = new THREE.ExtrudeGeometry(shape, {
-    depth: 0.024,
+    depth: 0.018,
     bevelEnabled: true,
-    bevelThickness: 0.002,
-    bevelSize: 0.002,
-    bevelSegments: 2
+    bevelThickness: 0.003,
+    bevelSize: 0.003,
+    bevelSegments: 1
   });
   geom.center();
 
   const mesh = new THREE.Mesh(geom, material);
   mesh.castShadow = true;
-  mesh.receiveShadow = true;
 
   if (isRightSide) {
-    mesh.position.set(0.132, 0.535, 0);
+    mesh.position.set(0.17, 0.63, 0);
   } else {
-    mesh.position.set(-0.132, 0.535, 0);
+    mesh.position.set(-0.17, 0.63, 0);
     mesh.rotation.y = Math.PI;
   }
 
   return mesh;
-}
-
-/**
- * Creates the western gold star concho mounted on the lateral spur strap.
- */
-function createStarConcho(): THREE.Mesh {
-  const points = 5;
-  const outerRadius = 0.034;
-  const innerRadius = 0.017;
-  const shape = new THREE.Shape();
-
-  for (let i = 0; i < points * 2; i++) {
-    const angle = (i * Math.PI) / points - Math.PI / 2;
-    const r = i % 2 === 0 ? outerRadius : innerRadius;
-    const x = Math.cos(angle) * r;
-    const y = Math.sin(angle) * r;
-    if (i === 0) shape.moveTo(x, y);
-    else shape.lineTo(x, y);
-  }
-  shape.closePath();
-
-  const geom = new THREE.ExtrudeGeometry(shape, {
-    depth: 0.006,
-    bevelEnabled: true,
-    bevelThickness: 0.002,
-    bevelSize: 0.002,
-    bevelSegments: 2
-  });
-
-  const mat = new THREE.MeshStandardMaterial({
-    color: 0xdeb841,
-    roughness: 0.25,
-    metalness: 0.88
-  });
-
-  const mesh = new THREE.Mesh(geom, mat);
-  mesh.castShadow = true;
-  return mesh;
-}
-
-/**
- * Creates the spur strap around the heel/instep with a lateral gold star concho.
- */
-function createSpurStrapAndConcho(
-  isRight: boolean,
-  strapMaterial: THREE.Material
-): { group: THREE.Group; conchoMesh: THREE.Mesh } {
-  const group = new THREE.Group();
-
-  // Curved strap around the heel counter
-  const points: THREE.Vector3[] = [];
-  const segments = 16;
-  const y = 0.125;
-  for (let i = 0; i <= segments; i++) {
-    const u = i / segments;
-    const angle = Math.PI * 0.15 + u * Math.PI * 0.70;
-    const x = Math.cos(angle) * 0.105;
-    const z = -0.06 - Math.sin(angle) * 0.105;
-    points.push(new THREE.Vector3(x, y, z));
-  }
-  const curve = new THREE.CatmullRomCurve3(points);
-  const strapGeom = new THREE.TubeGeometry(curve, 18, 0.010, 8, false);
-  const strapMesh = new THREE.Mesh(strapGeom, strapMaterial);
-  strapMesh.castShadow = true;
-  strapMesh.receiveShadow = true;
-  group.add(strapMesh);
-
-  // Lateral star concho mounted on the outer side
-  const conchoMesh = createStarConcho();
-  if (isRight) {
-    conchoMesh.position.set(0.105, 0.125, -0.04);
-    conchoMesh.rotation.y = Math.PI / 2 + 0.15;
-  } else {
-    conchoMesh.position.set(-0.105, 0.125, -0.04);
-    conchoMesh.rotation.y = -Math.PI / 2 - 0.15;
-  }
-  group.add(conchoMesh);
-
-  return { group, conchoMesh };
-}
-
-/**
- * Creates western decorative embroidery curves on the front face of the shaft and toe medallion.
- */
-function createEmbroideryGroup(isRight: boolean, threadMaterial: THREE.Material): THREE.Group {
-  const group = new THREE.Group();
-
-  // 1. Center spine curve
-  const centerPoints = [
-    new THREE.Vector3(0, 0.18, 0.133),
-    new THREE.Vector3(0, 0.30, 0.142),
-    new THREE.Vector3(0, 0.42, 0.148)
-  ];
-  const centerCurve = new THREE.CatmullRomCurve3(centerPoints);
-  const centerGeom = new THREE.TubeGeometry(centerCurve, 14, 0.004, 6, false);
-  const centerMesh = new THREE.Mesh(centerGeom, threadMaterial);
-  group.add(centerMesh);
-
-  // 2. Left flourish wing
-  const leftPoints = [
-    new THREE.Vector3(-0.015, 0.20, 0.133),
-    new THREE.Vector3(-0.065, 0.32, 0.122),
-    new THREE.Vector3(-0.082, 0.44, 0.092),
-    new THREE.Vector3(-0.055, 0.42, 0.112)
-  ];
-  const leftCurve = new THREE.CatmullRomCurve3(leftPoints);
-  const leftGeom = new THREE.TubeGeometry(leftCurve, 16, 0.0035, 6, false);
-  const leftMesh = new THREE.Mesh(leftGeom, threadMaterial);
-  group.add(leftMesh);
-
-  // 3. Right flourish wing
-  const rightPoints = [
-    new THREE.Vector3(0.015, 0.20, 0.133),
-    new THREE.Vector3(0.065, 0.32, 0.122),
-    new THREE.Vector3(0.082, 0.44, 0.092),
-    new THREE.Vector3(0.055, 0.42, 0.112)
-  ];
-  const rightCurve = new THREE.CatmullRomCurve3(rightPoints);
-  const rightGeom = new THREE.TubeGeometry(rightCurve, 16, 0.0035, 6, false);
-  const rightMesh = new THREE.Mesh(rightGeom, threadMaterial);
-  group.add(rightMesh);
-
-  // 4. Toe medallion bug stitch on top of toe box
-  const xToeOffset = isRight ? -0.012 : 0.012;
-  const toePoints = [
-    new THREE.Vector3(-0.045 + xToeOffset, 0.092, 0.19),
-    new THREE.Vector3(xToeOffset, 0.098, 0.23),
-    new THREE.Vector3(0.045 + xToeOffset, 0.092, 0.19)
-  ];
-  const toeCurve = new THREE.CatmullRomCurve3(toePoints);
-  const toeGeom = new THREE.TubeGeometry(toeCurve, 12, 0.0035, 6, false);
-  const toeMesh = new THREE.Mesh(toeGeom, threadMaterial);
-  group.add(toeMesh);
-
-  return group;
 }
 
 /**
@@ -556,13 +336,12 @@ function easeOutBack(x: number): number {
 }
 
 /**
- * Builds a single boot (shaft, vamp, sole, heel, straps, embroidery, concho).
+ * Builds a single boot (shaft, foot vamp, outsole, heel, pull tabs).
  */
 function buildBoot(
   isRight: boolean,
   leatherMaterial: THREE.Material,
-  stackedMaterial: THREE.Material,
-  threadMaterial: THREE.Material
+  stackedMaterial: THREE.Material
 ) {
   const root = new THREE.Group();
   root.name = isRight ? 'RightCowboyBoot' : 'LeftCowboyBoot';
@@ -574,12 +353,12 @@ function buildBoot(
   shaftMesh.receiveShadow = true;
   root.add(shaftMesh);
 
-  // 2. Vamp & Counter
-  const vampGeom = createVampGeometry(isRight);
-  const vampMesh = new THREE.Mesh(vampGeom, leatherMaterial);
-  vampMesh.castShadow = true;
-  vampMesh.receiveShadow = true;
-  root.add(vampMesh);
+  // 2. Foot / Vamp
+  const footGeom = createFootGeometry(isRight);
+  const footMesh = new THREE.Mesh(footGeom, leatherMaterial);
+  footMesh.castShadow = true;
+  footMesh.receiveShadow = true;
+  root.add(footMesh);
 
   // 3. Outsole & Stacked Heel
   const soleGeom = createSoleGeometry(isRight);
@@ -594,30 +373,20 @@ function buildBoot(
   heelMesh.receiveShadow = true;
   root.add(heelMesh);
 
-  // 4. Side pull straps
-  const pullStrapR = createPullStrapMesh(true, leatherMaterial);
-  const pullStrapL = createPullStrapMesh(false, leatherMaterial);
-  root.add(pullStrapR);
-  root.add(pullStrapL);
-
-  // 5. Spur strap and lateral star concho
-  const spur = createSpurStrapAndConcho(isRight, stackedMaterial);
-  root.add(spur.group);
-
-  // 6. Western embroidery stitching
-  const embroidery = createEmbroideryGroup(isRight, threadMaterial);
-  root.add(embroidery);
+  // 4. Clean side pull tabs
+  const pullTabR = createPullTabMesh(true, leatherMaterial);
+  const pullTabL = createPullTabMesh(false, leatherMaterial);
+  root.add(pullTabR);
+  root.add(pullTabL);
 
   return {
     root,
     shaftMesh,
-    vampMesh,
+    footMesh,
     soleMesh,
     heelMesh,
-    pullStrapR,
-    pullStrapL,
-    spur,
-    embroidery
+    pullTabR,
+    pullTabL
   };
 }
 
@@ -631,39 +400,41 @@ export function createCowboyBoots(
   rightFoot: THREE.Group
 ): CowboyBootsHandle {
   // 1. Materials
-  // Rich saddle leather
+  // Warm saddle leather (rich, plush/toy compliant)
   const leatherFeltMaterial = new THREE.MeshPhysicalMaterial({
-    color: 0x723b19,
-    roughness: 0.62,
+    color: 0x763e1c,
+    roughness: 0.58,
     metalness: 0.04,
-    clearcoat: 0.20,
+    clearcoat: 0.18,
     clearcoatRoughness: 0.35,
-    sheen: 0.55,
+    sheen: 0.5,
     sheenColor: new THREE.Color(0xb57a4a),
-    sheenRoughness: 0.65
+    side: THREE.DoubleSide
   });
 
   const leatherSmoothMaterial = new THREE.MeshStandardMaterial({
-    color: 0x7a411d,
-    roughness: 0.30,
-    metalness: 0.06
+    color: 0x7c431f,
+    roughness: 0.28,
+    metalness: 0.06,
+    side: THREE.DoubleSide
   });
 
   const leatherWireframeMaterial = new THREE.MeshBasicMaterial({
-    color: 0xc87532,
-    wireframe: true
+    color: 0xca7734,
+    wireframe: true,
+    side: THREE.DoubleSide
   });
 
   // Dark chocolate stacked leather (sole & heel)
   const stackedFeltMaterial = new THREE.MeshStandardMaterial({
-    color: 0x241309,
-    roughness: 0.78,
+    color: 0x221208,
+    roughness: 0.75,
     metalness: 0.04
   });
 
   const stackedSmoothMaterial = new THREE.MeshStandardMaterial({
-    color: 0x2c170b,
-    roughness: 0.35,
+    color: 0x28150a,
+    roughness: 0.32,
     metalness: 0.06
   });
 
@@ -672,21 +443,9 @@ export function createCowboyBoots(
     wireframe: true
   });
 
-  // Golden brass embroidery thread
-  const threadFeltMaterial = new THREE.MeshStandardMaterial({
-    color: 0xdeb841,
-    roughness: 0.40,
-    metalness: 0.25
-  });
-
-  const threadWireframeMaterial = new THREE.MeshBasicMaterial({
-    color: 0xdeb841,
-    wireframe: true
-  });
-
   // 2. Build left and right boots
-  const leftBootData = buildBoot(false, leatherFeltMaterial, stackedFeltMaterial, threadFeltMaterial);
-  const rightBootData = buildBoot(true, leatherFeltMaterial, stackedFeltMaterial, threadFeltMaterial);
+  const leftBootData = buildBoot(false, leatherFeltMaterial, stackedFeltMaterial);
+  const rightBootData = buildBoot(true, leatherFeltMaterial, stackedFeltMaterial);
 
   leftLeg.add(leftBootData.root);
   rightLeg.add(rightBootData.root);
@@ -701,33 +460,24 @@ export function createCowboyBoots(
   const animSpeed = 4.2; // ~0.24s snappy duration
 
   function setMaterialMode(mode: MaterialModeId) {
-    const leatherMat =
-      mode === 'fleece'
-        ? leatherFeltMaterial
-        : mode === 'smooth'
-          ? leatherSmoothMaterial
-          : leatherWireframeMaterial;
+    let leatherMat: THREE.Material = leatherFeltMaterial;
+    let stackedMat: THREE.Material = stackedFeltMaterial;
 
-    const stackedMat =
-      mode === 'fleece'
-        ? stackedFeltMaterial
-        : mode === 'smooth'
-          ? stackedSmoothMaterial
-          : stackedWireframeMaterial;
-
-    const threadMat = mode === 'wireframe' ? threadWireframeMaterial : threadFeltMaterial;
+    if (mode === 'smooth') {
+      leatherMat = leatherSmoothMaterial;
+      stackedMat = stackedSmoothMaterial;
+    } else if (mode === 'wireframe') {
+      leatherMat = leatherWireframeMaterial;
+      stackedMat = stackedWireframeMaterial;
+    }
 
     [leftBootData, rightBootData].forEach((boot) => {
       boot.shaftMesh.material = leatherMat;
-      boot.vampMesh.material = leatherMat;
+      boot.footMesh.material = leatherMat;
       boot.soleMesh.material = stackedMat;
       boot.heelMesh.material = stackedMat;
-      boot.pullStrapR.material = leatherMat;
-      boot.pullStrapL.material = leatherMat;
-      (boot.spur.group.children[0] as THREE.Mesh).material = stackedMat;
-      boot.embroidery.children.forEach((child) => {
-        (child as THREE.Mesh).material = threadMat;
-      });
+      boot.pullTabR.material = leatherMat;
+      boot.pullTabL.material = leatherMat;
     });
   }
 
@@ -803,18 +553,12 @@ export function createCowboyBoots(
   function dispose() {
     [leftBootData, rightBootData].forEach((boot) => {
       boot.shaftMesh.geometry.dispose();
-      boot.vampMesh.geometry.dispose();
+      boot.footMesh.geometry.dispose();
       boot.soleMesh.geometry.dispose();
       boot.heelMesh.geometry.dispose();
-      boot.pullStrapR.geometry.dispose();
-      boot.pullStrapL.geometry.dispose();
-      (boot.spur.group.children[0] as THREE.Mesh).geometry.dispose();
-      boot.spur.conchoMesh.geometry.dispose();
-      boot.embroidery.children.forEach((c) => (c as THREE.Mesh).geometry.dispose());
-      leftLeg.remove(boot.root);
+      boot.pullTabR.geometry.dispose();
+      boot.pullTabL.geometry.dispose();
     });
-
-    rightLeg.remove(rightBootData.root);
 
     leatherFeltMaterial.dispose();
     leatherSmoothMaterial.dispose();
@@ -822,8 +566,6 @@ export function createCowboyBoots(
     stackedFeltMaterial.dispose();
     stackedSmoothMaterial.dispose();
     stackedWireframeMaterial.dispose();
-    threadFeltMaterial.dispose();
-    threadWireframeMaterial.dispose();
   }
 
   return {

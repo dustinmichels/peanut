@@ -12,3 +12,9 @@ bun run dev
 bun run build
 bun run preview
 ```
+
+## Cowboy boots (temporarily disabled)
+
+Cowboy Mode includes procedural boots with tapered ankles, lined scalloped collars,
+rounded western toes, and underslung heels (`src/utils/cowboyBoots.ts`). They are
+currently disabled while their geometry and fit are refined.

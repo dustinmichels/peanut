@@ -15,7 +15,7 @@ function handleBounce() {
 <template>
   <div class="app-root">
     <AppHeader @bounce="handleBounce" />
-
+    <!-- Cowboy boots disabled for now to refine later -->
     <PeanutViewer
       ref="viewer"
       current-view="photo"
@@ -25,9 +25,8 @@ function handleBounce() {
       :breathing="true"
       :fuzz-intensity="1.0"
       :show-cowboy-hat="cowboyMode"
-      :show-cowboy-boots="cowboyMode"
+      :show-cowboy-boots="false"
       @update:cowboy-hat="cowboyMode = $event"
-      @update:cowboy-boots="cowboyMode = $event"
     />
 
     <CowboyModeSwitch v-model="cowboyMode" />

@@ -1,11 +1,5 @@
 <script setup lang="ts">
-defineProps<{
-  showReference: boolean;
-}>();
-
 const emit = defineEmits<{
-  (e: 'toggle-reference'): void;
-  (e: 'reset-camera'): void;
   (e: 'bounce'): void;
 }>();
 </script>
@@ -14,33 +8,24 @@ const emit = defineEmits<{
   <header class="app-header">
     <div class="header-brand">
       <div class="brand-badge">
-        <span class="peanut-icon" aria-hidden="true">🥜</span>
+        <div class="peanut-avatar" aria-hidden="true">
+          <span class="peanut-icon">🥜</span>
+          <span class="blush-glow" />
+        </div>
         <div class="brand-text">
           <div class="brand-title-row">
             <h1 class="brand-title">Julie's Peanut</h1>
-            <span class="brand-pill">3D Plush</span>
+            <span class="brand-pill">
+              <span class="pill-sparkle" aria-hidden="true">✨</span>
+              <span>3D Plush</span>
+            </span>
           </div>
-          <p class="brand-subtitle">Interactive WebGL Recreation of the Classic Plush Toy</p>
+          <p class="brand-subtitle">Soft &amp; squishy interactive plush friend 💕</p>
         </div>
       </div>
     </div>
 
     <div class="header-actions">
-      <button
-        type="button"
-        class="action-btn reset-btn"
-        title="Reset camera to photo matching angle"
-        aria-label="Reset camera view"
-        @click="emit('reset-camera')"
-      >
-        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-          <path d="M3 3v5h5" />
-        </svg>
-        <span class="btn-text-full">Reset View</span>
-        <span class="btn-text-short">Reset</span>
-      </button>
-
       <button
         type="button"
         class="action-btn bounce-btn"
@@ -49,22 +34,6 @@ const emit = defineEmits<{
       >
         <span class="btn-sparkle" aria-hidden="true">✨</span>
         <span>Bounce!</span>
-      </button>
-
-      <button
-        type="button"
-        class="action-btn"
-        :class="{ 'action-btn-active': showReference }"
-        title="Compare with original plush reference photo"
-        @click="emit('toggle-reference')"
-      >
-        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
-          <circle cx="9" cy="9" r="2" />
-          <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
-        </svg>
-        <span class="btn-text-full">{{ showReference ? 'Hide Photo' : 'Compare Photo' }}</span>
-        <span class="btn-text-short">{{ showReference ? 'Hide' : 'Photo' }}</span>
       </button>
     </div>
   </header>
@@ -80,7 +49,7 @@ const emit = defineEmits<{
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: calc(0.75rem + env(safe-area-inset-top, 0px)) 1.5rem 0.75rem;
+  padding: calc(0.85rem + env(safe-area-inset-top, 0px)) 1.75rem 0.85rem;
   pointer-events: none;
 }
 
@@ -91,19 +60,90 @@ const emit = defineEmits<{
 .brand-badge {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(220, 205, 185, 0.4);
-  padding: 0.5rem 0.9rem;
-  border-radius: 9999px;
-  box-shadow: 0 4px 20px rgba(120, 80, 40, 0.08);
+  gap: 1.05rem;
+  background: rgba(255, 253, 248, 0.94);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 2.5px solid rgba(240, 218, 192, 0.9);
+  padding: 0.85rem 1.55rem 0.9rem 1rem;
+  border-radius: 32px;
+  box-shadow:
+    0 14px 38px -4px rgba(120, 70, 20, 0.13),
+    0 4px 14px rgba(120, 70, 20, 0.06),
+    inset 0 1px 0 #ffffff;
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.28s ease;
+  user-select: none;
+}
+
+.brand-badge:hover {
+  transform: translateY(-3px) scale(1.015);
+  box-shadow:
+    0 18px 44px -4px rgba(120, 70, 20, 0.18),
+    0 6px 18px rgba(120, 70, 20, 0.09),
+    inset 0 1px 0 #ffffff;
+}
+
+.peanut-avatar {
+  width: 54px;
+  height: 54px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #fff8ee 0%, #ffeacc 100%);
+  border: 2.5px solid #f6cda3;
+  box-shadow:
+    0 4px 12px rgba(160, 90, 30, 0.16),
+    inset 0 2px 4px rgba(255, 255, 255, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  animation: peanut-idle 4s ease-in-out infinite;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes peanut-idle {
+  0%, 100% {
+    transform: rotate(0deg) scale(1);
+  }
+  25% {
+    transform: rotate(-4deg) scale(1.03);
+  }
+  50% {
+    transform: rotate(4deg) scale(1.04);
+  }
+  75% {
+    transform: rotate(-2deg) scale(1.02);
+  }
+}
+
+.brand-badge:hover .peanut-avatar {
+  animation: peanut-wiggle 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes peanut-wiggle {
+  0% {
+    transform: rotate(-10deg) scale(1.1);
+  }
+  100% {
+    transform: rotate(10deg) scale(1.15);
+  }
+}
+
+.blush-glow {
+  position: absolute;
+  bottom: 8px;
+  width: 32px;
+  height: 8px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(255, 140, 140, 0.35) 0%, rgba(255, 140, 140, 0) 75%);
+  pointer-events: none;
 }
 
 .peanut-icon {
-  font-size: 1.5rem;
+  font-size: 2.15rem;
   line-height: 1;
+  display: block;
+  filter: drop-shadow(0 2px 4px rgba(130, 70, 20, 0.18));
 }
 
 .brand-text {
@@ -114,32 +154,53 @@ const emit = defineEmits<{
 .brand-title-row {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.65rem;
 }
 
 .brand-title {
   margin: 0;
-  font-size: 0.95rem;
+  font-family: 'Fredoka', 'Nunito', 'Quicksand', ui-rounded, 'Hiragino Maru Gothic ProN', 'Arial Rounded MT Bold', sans-serif;
+  font-size: 2.1rem;
   font-weight: 700;
-  color: #3b2c1d;
-  letter-spacing: -0.01em;
+  color: #3d210d;
+  letter-spacing: -0.015em;
+  line-height: 1.12;
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9),
+    0 2px 8px rgba(120, 60, 10, 0.07);
 }
 
 .brand-pill {
-  font-size: 0.65rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-family: 'Fredoka', 'Nunito', 'Quicksand', sans-serif;
+  font-size: 0.78rem;
   font-weight: 700;
   text-transform: uppercase;
-  background: #f1dfca;
-  color: #7b4b1a;
-  padding: 0.15rem 0.45rem;
+  background: linear-gradient(135deg, #ffdfb3 0%, #ffcf8a 100%);
+  color: #723707;
+  border: 1.5px solid rgba(225, 140, 40, 0.4);
+  padding: 0.26rem 0.75rem;
   border-radius: 9999px;
   letter-spacing: 0.04em;
+  box-shadow:
+    0 2px 8px rgba(190, 100, 20, 0.14),
+    inset 0 1px 2px rgba(255, 255, 255, 0.75);
+}
+
+.pill-sparkle {
+  font-size: 0.7rem;
+  line-height: 1;
 }
 
 .brand-subtitle {
-  margin: 0;
-  font-size: 0.75rem;
-  color: #7d6b58;
+  margin: 0.2rem 0 0;
+  font-family: 'Fredoka', 'Nunito', 'Quicksand', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: #7d5c43;
+  letter-spacing: 0.005em;
 }
 
 .header-actions {
@@ -152,67 +213,53 @@ const emit = defineEmits<{
 .action-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.45rem 0.85rem;
+  gap: 0.5rem;
+  padding: 0.65rem 1.35rem;
   border-radius: 9999px;
-  font-size: 0.82rem;
+  font-family: 'Fredoka', 'Nunito', 'Quicksand', sans-serif;
+  font-size: 0.98rem;
   font-weight: 600;
   color: #4b3823;
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 253, 248, 0.94);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(215, 195, 175, 0.5);
+  border: 2px solid rgba(225, 205, 185, 0.85);
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 2px 10px rgba(120, 80, 40, 0.06);
+  transition: all 0.24s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 4px 16px rgba(120, 80, 40, 0.1);
 }
 
 .action-btn:hover {
   background: #ffffff;
   border-color: #d1b596;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(120, 80, 40, 0.12);
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 8px 22px rgba(120, 80, 40, 0.16);
 }
 
 .action-btn:active {
-  transform: translateY(0);
-}
-
-.action-btn-active {
-  background: #734821;
-  color: #ffffff;
-  border-color: #734821;
-}
-
-.action-btn-active:hover {
-  background: #5e3a1a;
-  border-color: #5e3a1a;
-  color: #ffffff;
+  transform: translateY(0) scale(0.98);
 }
 
 .bounce-btn {
-  background: #fbf1e2;
-  border-color: #e5cdb2;
-  color: #744415;
+  background: linear-gradient(135deg, #fff7ec 0%, #ffeed5 100%);
+  border-color: #f4cba0;
+  color: #723e0c;
+  box-shadow: 0 4px 16px rgba(180, 110, 40, 0.14);
 }
 
 .bounce-btn:hover {
-  background: #faebd3;
-}
-
-.btn-icon {
-  width: 14px;
-  height: 14px;
+  background: linear-gradient(135deg, #fffbf3 0%, #fff2dd 100%);
+  border-color: #eebf8e;
 }
 
 .btn-sparkle {
-  font-size: 0.85rem;
+  font-size: 0.95rem;
+  animation: sparkle-twinkle 2s ease-in-out infinite;
 }
 
-@media (min-width: 641px) {
-  .btn-text-short {
-    display: none;
-  }
+@keyframes sparkle-twinkle {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.2) rotate(15deg); }
 }
 
 @media (max-width: 640px) {
@@ -220,26 +267,33 @@ const emit = defineEmits<{
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    gap: 0.4rem;
-    padding: calc(0.5rem + env(safe-area-inset-top, 0px)) 0.75rem 0.5rem;
+    gap: 0.5rem;
+    padding: calc(0.6rem + env(safe-area-inset-top, 0px)) 0.85rem 0.6rem;
   }
   .header-brand {
     flex-shrink: 1;
     min-width: 0;
   }
   .brand-badge {
-    padding: 0.32rem 0.6rem;
-    gap: 0.4rem;
+    padding: 0.45rem 0.85rem 0.5rem 0.65rem;
+    gap: 0.6rem;
+    border-radius: 20px;
+    border-width: 1.5px;
+  }
+  .peanut-avatar {
+    width: 38px;
+    height: 38px;
   }
   .peanut-icon {
-    font-size: 1.15rem;
+    font-size: 1.4rem;
   }
   .brand-title {
-    font-size: 0.86rem;
+    font-size: 1.22rem;
     white-space: nowrap;
   }
   .brand-pill {
-    display: none;
+    padding: 0.18rem 0.5rem;
+    font-size: 0.65rem;
   }
   .brand-subtitle {
     display: none;
@@ -249,44 +303,39 @@ const emit = defineEmits<{
     flex-shrink: 0;
   }
   .action-btn {
-    padding: 0.35rem 0.55rem;
-    font-size: 0.73rem;
-    gap: 0.25rem;
-    min-height: 32px;
-  }
-  .reset-btn {
-    width: 32px;
-    height: 32px;
-    padding: 0;
-    justify-content: center;
-    border-radius: 9999px;
-  }
-  .reset-btn .btn-text-short {
-    display: none;
-  }
-  .btn-text-full {
-    display: none;
-  }
-  .btn-text-short {
-    display: inline;
+    padding: 0.45rem 0.85rem;
+    font-size: 0.82rem;
+    gap: 0.3rem;
+    min-height: 36px;
   }
 }
 
-@media (max-width: 380px) {
+@media (max-width: 400px) {
   .app-header {
-    padding: calc(0.4rem + env(safe-area-inset-top, 0px)) 0.5rem 0.4rem;
-    gap: 0.25rem;
-  }
-  .brand-badge {
-    padding: 0.3rem 0.5rem;
+    padding: calc(0.45rem + env(safe-area-inset-top, 0px)) 0.6rem 0.45rem;
     gap: 0.35rem;
   }
+  .brand-badge {
+    padding: 0.35rem 0.65rem 0.4rem 0.5rem;
+    gap: 0.45rem;
+    border-radius: 16px;
+  }
+  .peanut-avatar {
+    width: 32px;
+    height: 32px;
+  }
+  .peanut-icon {
+    font-size: 1.2rem;
+  }
   .brand-title {
-    font-size: 0.82rem;
+    font-size: 1.05rem;
+  }
+  .brand-pill {
+    display: none;
   }
   .action-btn {
-    padding: 0.3rem 0.45rem;
-    font-size: 0.7rem;
+    padding: 0.4rem 0.7rem;
+    font-size: 0.78rem;
   }
 }
 </style>

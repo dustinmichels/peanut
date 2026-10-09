@@ -6,8 +6,9 @@ import {
   createContactShadowTexture,
   type CorduroyTextureBundle
 } from './textureGenerator';
+import { createCowboyHat } from './cowboyHat';
+import { createCowboyBoots } from './cowboyBoots';
 import type { MaterialModeId } from '../types/peanut';
-
 export interface PeanutModelHandle {
   group: THREE.Group;
   bodyMesh: THREE.Mesh<THREE.BufferGeometry, THREE.Material>;
@@ -16,7 +17,11 @@ export interface PeanutModelHandle {
   wireframeMaterial: THREE.MeshBasicMaterial;
   setMaterialMode: (mode: MaterialModeId) => void;
   setFuzzIntensity: (factor: number) => void;
-  animate: (time: number, isBreathing: boolean, bounceProgress: number) => void;
+  animate: (time: number, isBreathing: boolean, bounceProgress: number, deltaSeconds?: number) => void;
+  setCowboyHat: (visible: boolean) => void;
+  toggleCowboyHat: () => boolean;
+  setCowboyBoots: (visible: boolean) => void;
+  toggleCowboyBoots: () => boolean;
   dispose: () => void;
 }
 
@@ -214,7 +219,7 @@ function createSmileMesh(): THREE.Mesh {
 function createCorduroyLeg(
   isRight: boolean,
   corduroyTextures: CorduroyTextureBundle
-): THREE.Group {
+): { legGroup: THREE.Group; footGroup: THREE.Group } {
   const legGroup = new THREE.Group();
 
   const corduroyMaterial = new THREE.MeshStandardMaterial({
@@ -279,7 +284,7 @@ function createCorduroyLeg(
     legGroup.rotation.x = 0.05;
   }
 
-  return legGroup;
+  return { legGroup, footGroup };
 }
 
 // Assemble complete Peanut character model
@@ -342,12 +347,16 @@ export function createPeanutModel(): PeanutModelHandle {
   bodyContainer.add(smileMesh);
 
   // 4. Corduroy Legs & Booties
-  const leftLeg = createCorduroyLeg(false, corduroyTextures);
-  const rightLeg = createCorduroyLeg(true, corduroyTextures);
+  const { legGroup: leftLeg, footGroup: leftFoot } = createCorduroyLeg(false, corduroyTextures);
+  const { legGroup: rightLeg, footGroup: rightFoot } = createCorduroyLeg(true, corduroyTextures);
   rootGroup.add(leftLeg);
   rootGroup.add(rightLeg);
 
-  // 5. Contact Shadow Plane on Floor
+  // 5. Cowboy Hat and Boots Accessories
+  const cowboyHatHandle = createCowboyHat();
+  bodyContainer.add(cowboyHatHandle.group);
+
+  const cowboyBootsHandle = createCowboyBoots(leftLeg, rightLeg, leftFoot, rightFoot);
   const shadowGeom = new THREE.PlaneGeometry(2.4, 2.4);
   const shadowMat = new THREE.MeshBasicMaterial({
     map: shadowTexture,
@@ -369,15 +378,18 @@ export function createPeanutModel(): PeanutModelHandle {
     } else {
       bodyMesh.material = wireframeMaterial;
     }
+    cowboyHatHandle.setMaterialMode(mode);
+    cowboyBootsHandle.setMaterialMode(mode);
   }
-
   function setFuzzIntensity(factor: number) {
     fleeceMaterial.normalScale.set(factor * 1.5, factor * 1.5);
     fleeceMaterial.sheen = Math.min(1.0, factor * 1.2);
   }
 
   // Animation update
-  function animate(time: number, isBreathing: boolean, bounceProgress: number) {
+  function animate(time: number, isBreathing: boolean, bounceProgress: number, deltaSeconds = 0.016) {
+    cowboyHatHandle.update(deltaSeconds);
+    cowboyBootsHandle.update(deltaSeconds);
     let breatheScaleY = 1.0;
     let breatheScaleXZ = 1.0;
     let swayTiltZ = 0.0;
@@ -433,8 +445,9 @@ export function createPeanutModel(): PeanutModelHandle {
     corduroyTextures.map.dispose();
     corduroyTextures.normalMap.dispose();
     shadowTexture.dispose();
+    cowboyHatHandle.dispose();
+    cowboyBootsHandle.dispose();
   }
-
   return {
     group: rootGroup,
     bodyMesh,
@@ -444,6 +457,10 @@ export function createPeanutModel(): PeanutModelHandle {
     setMaterialMode,
     setFuzzIntensity,
     animate,
+    setCowboyHat: cowboyHatHandle.setVisible,
+    toggleCowboyHat: cowboyHatHandle.toggle,
+    setCowboyBoots: cowboyBootsHandle.setVisible,
+    toggleCowboyBoots: cowboyBootsHandle.toggle,
     dispose
   };
 }

@@ -12,16 +12,16 @@ export interface CameraPresetConfig {
 const VIEW_PRESETS: Record<ViewPresetId, CameraPresetConfig> = {
   // Matches the exact 3/4 hero camera angle in the reference image
   photo: {
-    position: new THREE.Vector3(2.5, 2.2, 5.8),
-    target: new THREE.Vector3(0.0, 1.5, 0.0)
+    position: new THREE.Vector3(2.8, 2.4, 6.7),
+    target: new THREE.Vector3(0.0, 1.65, 0.0)
   },
   front: {
-    position: new THREE.Vector3(0.0, 1.7, 5.8),
-    target: new THREE.Vector3(0.0, 1.5, 0.0)
+    position: new THREE.Vector3(0.0, 1.9, 6.7),
+    target: new THREE.Vector3(0.0, 1.65, 0.0)
   },
   face: {
-    position: new THREE.Vector3(0.7, 2.7, 3.2),
-    target: new THREE.Vector3(0.0, 2.4, 0.4)
+    position: new THREE.Vector3(0.7, 2.7, 3.5),
+    target: new THREE.Vector3(0.0, 2.35, 0.4)
   },
   feet: {
     position: new THREE.Vector3(1.1, 0.8, 2.6),
@@ -63,7 +63,8 @@ export function usePeanutScene() {
   // Scene animation parameters
   let autoRotateActive = shallowRef(false);
   let breathingActive = shallowRef(true);
-
+  const cowboyHatActive = shallowRef(false);
+  const cowboyBootsActive = shallowRef(false);
   function init(container: HTMLElement) {
     // 1. Scene & Background
     scene = new THREE.Scene();
@@ -149,6 +150,8 @@ export function usePeanutScene() {
 
     // 7. Peanut Character Model
     peanutHandle = createPeanutModel();
+    peanutHandle.setCowboyHat(cowboyHatActive.value);
+    peanutHandle.setCowboyBoots(cowboyBootsActive.value);
     scene.add(peanutHandle.group);
 
     // 8. Responsive Projection & Resize Observer
@@ -183,11 +186,14 @@ export function usePeanutScene() {
     resizeObserver.observe(container);
     // 9. Start Render Loop
     const sceneStartTime = performance.now();
+    let lastFrameTime = sceneStartTime;
 
     function renderLoop() {
       animationFrameId = requestAnimationFrame(renderLoop);
-      const elapsed = (performance.now() - sceneStartTime) * 0.001;
-
+      const currentTime = performance.now();
+      const elapsed = (currentTime - sceneStartTime) * 0.001;
+      const delta = (currentTime - lastFrameTime) * 0.001;
+      lastFrameTime = currentTime;
       // Camera lerp animation
       if (isTransitioningCam && camera && controls && targetCamPos && targetCamLook) {
         camera.position.lerp(targetCamPos, 0.08);
@@ -225,7 +231,7 @@ export function usePeanutScene() {
 
       // Animate peanut model
       if (peanutHandle) {
-        peanutHandle.animate(elapsed, breathingActive.value, bounceProg);
+        peanutHandle.animate(elapsed, breathingActive.value, bounceProg, delta);
       }
 
       if (renderer && scene && camera) {
@@ -320,6 +326,32 @@ export function usePeanutScene() {
     breathingActive.value = typeof val === 'boolean' ? val : !breathingActive.value;
   }
 
+  function setCowboyHat(val: boolean) {
+    cowboyHatActive.value = val;
+    if (peanutHandle) {
+      peanutHandle.setCowboyHat(val);
+    }
+  }
+
+  function toggleCowboyHat(val?: boolean): boolean {
+    const next = typeof val === 'boolean' ? val : !cowboyHatActive.value;
+    setCowboyHat(next);
+    return next;
+  }
+
+  function setCowboyBoots(val: boolean) {
+    cowboyBootsActive.value = val;
+    if (peanutHandle) {
+      peanutHandle.setCowboyBoots(val);
+    }
+  }
+
+  function toggleCowboyBoots(val?: boolean): boolean {
+    const next = typeof val === 'boolean' ? val : !cowboyBootsActive.value;
+    setCowboyBoots(next);
+    return next;
+  }
+
   function dispose() {
     if (animationFrameId !== null) {
       cancelAnimationFrame(animationFrameId);
@@ -366,6 +398,12 @@ export function usePeanutScene() {
     triggerBounce,
     toggleAutoRotate,
     toggleBreathing,
+    cowboyHatActive,
+    setCowboyHat,
+    toggleCowboyHat,
+    cowboyBootsActive,
+    setCowboyBoots,
+    toggleCowboyBoots,
     dispose
   };
 }

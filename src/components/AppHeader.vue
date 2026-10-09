@@ -12,16 +12,7 @@ const emit = defineEmits<{
           <span class="peanut-icon">🥜</span>
           <span class="blush-glow" />
         </div>
-        <div class="brand-text">
-          <div class="brand-title-row">
-            <h1 class="brand-title">Julie's Peanut</h1>
-            <span class="brand-pill">
-              <span class="pill-sparkle" aria-hidden="true">✨</span>
-              <span>3D Plush</span>
-            </span>
-          </div>
-          <p class="brand-subtitle">Soft &amp; squishy interactive plush friend 💕</p>
-        </div>
+        <h1 class="brand-title">Julie's Peanut</h1>
       </div>
     </div>
 
@@ -65,7 +56,7 @@ const emit = defineEmits<{
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 2.5px solid rgba(240, 218, 192, 0.9);
-  padding: 0.85rem 1.55rem 0.9rem 1rem;
+  padding: 0.65rem 1.45rem 0.65rem 0.85rem;
   border-radius: 32px;
   box-shadow:
     0 14px 38px -4px rgba(120, 70, 20, 0.13),
@@ -146,17 +137,6 @@ const emit = defineEmits<{
   filter: drop-shadow(0 2px 4px rgba(130, 70, 20, 0.18));
 }
 
-.brand-text {
-  display: flex;
-  flex-direction: column;
-}
-
-.brand-title-row {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-}
-
 .brand-title {
   margin: 0;
   font-family: 'Fredoka', 'Nunito', 'Quicksand', ui-rounded, 'Hiragino Maru Gothic ProN', 'Arial Rounded MT Bold', sans-serif;
@@ -168,39 +148,6 @@ const emit = defineEmits<{
   text-shadow:
     0 1px 0 rgba(255, 255, 255, 0.9),
     0 2px 8px rgba(120, 60, 10, 0.07);
-}
-
-.brand-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  font-family: 'Fredoka', 'Nunito', 'Quicksand', sans-serif;
-  font-size: 0.78rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  background: linear-gradient(135deg, #ffdfb3 0%, #ffcf8a 100%);
-  color: #723707;
-  border: 1.5px solid rgba(225, 140, 40, 0.4);
-  padding: 0.26rem 0.75rem;
-  border-radius: 9999px;
-  letter-spacing: 0.04em;
-  box-shadow:
-    0 2px 8px rgba(190, 100, 20, 0.14),
-    inset 0 1px 2px rgba(255, 255, 255, 0.75);
-}
-
-.pill-sparkle {
-  font-size: 0.7rem;
-  line-height: 1;
-}
-
-.brand-subtitle {
-  margin: 0.2rem 0 0;
-  font-family: 'Fredoka', 'Nunito', 'Quicksand', sans-serif;
-  font-size: 0.92rem;
-  font-weight: 500;
-  color: #7d5c43;
-  letter-spacing: 0.005em;
 }
 
 .header-actions {
@@ -291,13 +238,6 @@ const emit = defineEmits<{
     font-size: 1.22rem;
     white-space: nowrap;
   }
-  .brand-pill {
-    padding: 0.18rem 0.5rem;
-    font-size: 0.65rem;
-  }
-  .brand-subtitle {
-    display: none;
-  }
   .header-actions {
     gap: 0.35rem;
     flex-shrink: 0;
@@ -328,14 +268,12 @@ const emit = defineEmits<{
     font-size: 1.2rem;
   }
   .brand-title {
-    font-size: 1.05rem;
-  }
-  .brand-pill {
-    display: none;
+    font-size: 0.95rem;
   }
   .action-btn {
-    padding: 0.4rem 0.7rem;
-    font-size: 0.78rem;
+    padding: 0.35rem 0.55rem;
+    font-size: 0.74rem;
+    gap: 0.25rem;
   }
 }
 </style>

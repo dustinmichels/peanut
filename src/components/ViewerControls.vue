@@ -13,6 +13,7 @@ defineProps<{
   autoRotate: boolean;
   breathing: boolean;
   fuzzIntensity: number;
+  cowboyMode?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -22,6 +23,7 @@ const emit = defineEmits<{
   (e: 'update:fuzz', val: number): void;
   (e: 'toggle:autoRotate'): void;
   (e: 'toggle:breathing'): void;
+  (e: 'toggle:cowboyMode'): void;
   (e: 'trigger:bounce'): void;
 }>();
 
@@ -169,6 +171,15 @@ function onFuzzChange(event: Event) {
           <span>Bounce!</span>
         </button>
 
+        <button
+          type="button"
+          class="chip-btn"
+          :class="{ 'chip-btn-active': cowboyMode }"
+          @click="emit('toggle:cowboyMode')"
+        >
+          <span class="chip-icon">🤠</span>
+          <span>Cowboy Mode ({{ cowboyMode ? 'ON' : 'OFF' }})</span>
+        </button>
         <button
           type="button"
           class="chip-btn"

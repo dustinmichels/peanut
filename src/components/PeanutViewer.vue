@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, useTemplateRef, shallowRef } from 'vue';
+import { onMounted, useTemplateRef, shallowRef, watch } from 'vue';
 import { usePeanutScene } from '../composables/usePeanutScene';
 import type {
   LightingPresetId,
@@ -14,12 +14,15 @@ const props = defineProps<{
   autoRotate: boolean;
   breathing: boolean;
   fuzzIntensity: number;
+  showCowboyHat?: boolean;
+  showCowboyBoots?: boolean;
 }>();
 
 const emit = defineEmits<{
   (e: 'bounced'): void;
+  (e: 'update:cowboyHat', val: boolean): void;
+  (e: 'update:cowboyBoots', val: boolean): void;
 }>();
-
 const containerRef = useTemplateRef<HTMLDivElement>('canvasContainer');
 const hasInteracted = shallowRef(false);
 
@@ -32,9 +35,14 @@ const {
   setFuzzIntensity,
   triggerBounce,
   toggleAutoRotate,
-  toggleBreathing
+  toggleBreathing,
+  cowboyHatActive,
+  setCowboyHat,
+  toggleCowboyHat,
+  cowboyBootsActive,
+  setCowboyBoots,
+  toggleCowboyBoots
 } = usePeanutScene();
-
 // Differentiate drag from click
 let pointerDownTime = 0;
 let pointerDownX = 0;
@@ -68,13 +76,34 @@ onMounted(() => {
     setFuzzIntensity(props.fuzzIntensity);
     toggleAutoRotate(props.autoRotate);
     toggleBreathing(props.breathing);
-
-    // Auto-dismiss interaction hint after 6 seconds so it doesn't clutter mobile
+    if (typeof props.showCowboyHat === 'boolean') {
+      setCowboyHat(props.showCowboyHat);
+    }
+    if (typeof props.showCowboyBoots === 'boolean') {
+      setCowboyBoots(props.showCowboyBoots);
+    }
     setTimeout(() => {
       hasInteracted.value = true;
     }, 6000);
   }
 });
+watch(
+  () => props.showCowboyHat,
+  (val) => {
+    if (typeof val === 'boolean' && val !== cowboyHatActive.value) {
+      setCowboyHat(val);
+    }
+  }
+);
+watch(
+  () => props.showCowboyBoots,
+  (val) => {
+    if (typeof val === 'boolean' && val !== cowboyBootsActive.value) {
+      setCowboyBoots(val);
+    }
+  }
+);
+
 defineExpose({
   setViewPreset,
   setLightingPreset,
@@ -82,7 +111,13 @@ defineExpose({
   setFuzzIntensity,
   triggerBounce,
   toggleAutoRotate,
-  toggleBreathing
+  toggleBreathing,
+  cowboyHatActive,
+  setCowboyHat,
+  toggleCowboyHat,
+  cowboyBootsActive,
+  setCowboyBoots,
+  toggleCowboyBoots
 });
 </script>
 

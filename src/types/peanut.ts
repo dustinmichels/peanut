@@ -1,8 +1,8 @@
-export type LightingPresetId = 'studio' | 'golden' | 'daylight' | 'dramatic';
+export type LightingPresetId = "studio" | "golden" | "daylight" | "dramatic";
 
-export type MaterialModeId = 'fleece' | 'smooth' | 'wireframe';
+export type MaterialModeId = "fleece" | "smooth" | "wireframe";
 
-export type ViewPresetId = 'photo' | 'front' | 'face' | 'feet' | 'side';
+export type ViewPresetId = "photo" | "front" | "face" | "feet" | "side";
 
 export interface PeanutSceneConfig {
   lighting: LightingPresetId;

@@ -1,5 +1,5 @@
-import * as THREE from 'three';
-import { cellular2D, fbm2D } from './noise';
+import * as THREE from "three";
+import { cellular2D, fbm2D } from "./noise";
 
 export interface FleeceTextureBundle {
   map: THREE.CanvasTexture;
@@ -15,28 +15,28 @@ export interface CorduroyTextureBundle {
 
 // Generate procedural curly fleece/bouclé plush texture
 export function createFleeceTextures(size = 512): FleeceTextureBundle {
-  const colorCanvas = document.createElement('canvas');
+  const colorCanvas = document.createElement("canvas");
   colorCanvas.width = size;
   colorCanvas.height = size;
-  const colorCtx = colorCanvas.getContext('2d', { willReadFrequently: true });
+  const colorCtx = colorCanvas.getContext("2d", { willReadFrequently: true });
 
-  const normalCanvas = document.createElement('canvas');
+  const normalCanvas = document.createElement("canvas");
   normalCanvas.width = size;
   normalCanvas.height = size;
-  const normalCtx = normalCanvas.getContext('2d');
+  const normalCtx = normalCanvas.getContext("2d");
 
-  const roughnessCanvas = document.createElement('canvas');
+  const roughnessCanvas = document.createElement("canvas");
   roughnessCanvas.width = size;
   roughnessCanvas.height = size;
-  const roughnessCtx = roughnessCanvas.getContext('2d');
+  const roughnessCtx = roughnessCanvas.getContext("2d");
 
-  const bumpCanvas = document.createElement('canvas');
+  const bumpCanvas = document.createElement("canvas");
   bumpCanvas.width = size;
   bumpCanvas.height = size;
-  const bumpCtx = bumpCanvas.getContext('2d');
+  const bumpCtx = bumpCanvas.getContext("2d");
 
   if (!colorCtx || !normalCtx || !roughnessCtx) {
-    throw new Error('Canvas 2D context not supported');
+    throw new Error("Canvas 2D context not supported");
   }
 
   const colorImgData = colorCtx.createImageData(size, size);
@@ -178,18 +178,18 @@ export function createFleeceTextures(size = 512): FleeceTextureBundle {
 
 // Generate ribbed corduroy texture for legs and feet
 export function createCorduroyTextures(size = 256): CorduroyTextureBundle {
-  const colorCanvas = document.createElement('canvas');
+  const colorCanvas = document.createElement("canvas");
   colorCanvas.width = size;
   colorCanvas.height = size;
-  const colorCtx = colorCanvas.getContext('2d');
+  const colorCtx = colorCanvas.getContext("2d");
 
-  const normalCanvas = document.createElement('canvas');
+  const normalCanvas = document.createElement("canvas");
   normalCanvas.width = size;
   normalCanvas.height = size;
-  const normalCtx = normalCanvas.getContext('2d');
+  const normalCtx = normalCanvas.getContext("2d");
 
   if (!colorCtx || !normalCtx) {
-    throw new Error('Canvas 2D context not supported');
+    throw new Error("Canvas 2D context not supported");
   }
 
   const colorImgData = colorCtx.createImageData(size, size);
@@ -263,11 +263,11 @@ export function createCorduroyTextures(size = 256): CorduroyTextureBundle {
 
 // Generate soft radial contact shadow for floor
 export function createContactShadowTexture(size = 512): THREE.CanvasTexture {
-  const canvas = document.createElement('canvas');
+  const canvas = document.createElement("canvas");
   canvas.width = size;
   canvas.height = size;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) throw new Error('Canvas context failed');
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Canvas context failed");
 
   ctx.clearRect(0, 0, size, size);
 
@@ -277,9 +277,9 @@ export function createContactShadowTexture(size = 512): THREE.CanvasTexture {
 
   // Broad soft shadow
   const broadGrad = ctx.createRadialGradient(cx, cy, 20, cx, cy, size * 0.45);
-  broadGrad.addColorStop(0, 'rgba(30, 20, 15, 0.45)');
-  broadGrad.addColorStop(0.4, 'rgba(40, 25, 20, 0.22)');
-  broadGrad.addColorStop(1, 'rgba(40, 25, 20, 0)');
+  broadGrad.addColorStop(0, "rgba(30, 20, 15, 0.45)");
+  broadGrad.addColorStop(0.4, "rgba(40, 25, 20, 0.22)");
+  broadGrad.addColorStop(1, "rgba(40, 25, 20, 0)");
   ctx.fillStyle = broadGrad;
   ctx.beginPath();
   ctx.ellipse(cx, cy, size * 0.42, size * 0.32, 0, 0, Math.PI * 2);
@@ -287,9 +287,9 @@ export function createContactShadowTexture(size = 512): THREE.CanvasTexture {
 
   // Left foot contact shadow
   const leftFootGrad = ctx.createRadialGradient(cx - 50, cy + 10, 4, cx - 50, cy + 10, 48);
-  leftFootGrad.addColorStop(0, 'rgba(20, 12, 8, 0.7)');
-  leftFootGrad.addColorStop(0.5, 'rgba(20, 12, 8, 0.3)');
-  leftFootGrad.addColorStop(1, 'rgba(20, 12, 8, 0)');
+  leftFootGrad.addColorStop(0, "rgba(20, 12, 8, 0.7)");
+  leftFootGrad.addColorStop(0.5, "rgba(20, 12, 8, 0.3)");
+  leftFootGrad.addColorStop(1, "rgba(20, 12, 8, 0)");
   ctx.fillStyle = leftFootGrad;
   ctx.beginPath();
   ctx.ellipse(cx - 50, cy + 10, 50, 36, -0.15, 0, Math.PI * 2);
@@ -297,9 +297,9 @@ export function createContactShadowTexture(size = 512): THREE.CanvasTexture {
 
   // Right foot contact shadow (slightly forward and angled)
   const rightFootGrad = ctx.createRadialGradient(cx + 52, cy - 8, 4, cx + 52, cy - 8, 54);
-  rightFootGrad.addColorStop(0, 'rgba(20, 12, 8, 0.7)');
-  rightFootGrad.addColorStop(0.5, 'rgba(20, 12, 8, 0.3)');
-  rightFootGrad.addColorStop(1, 'rgba(20, 12, 8, 0)');
+  rightFootGrad.addColorStop(0, "rgba(20, 12, 8, 0.7)");
+  rightFootGrad.addColorStop(0.5, "rgba(20, 12, 8, 0.3)");
+  rightFootGrad.addColorStop(1, "rgba(20, 12, 8, 0)");
   ctx.fillStyle = rightFootGrad;
   ctx.beginPath();
   ctx.ellipse(cx + 52, cy - 8, 54, 40, 0.22, 0, Math.PI * 2);

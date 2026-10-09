@@ -1,14 +1,14 @@
-import * as THREE from 'three';
-import { fbm3D } from './noise';
+import * as THREE from "three";
+import { fbm3D } from "./noise";
 import {
   createFleeceTextures,
   createCorduroyTextures,
   createContactShadowTexture,
-  type CorduroyTextureBundle
-} from './textureGenerator';
-import { createCowboyHat } from './cowboyHat';
-import { createCowboyBoots } from './cowboyBoots';
-import type { MaterialModeId } from '../types/peanut';
+  type CorduroyTextureBundle,
+} from "./textureGenerator";
+import { createCowboyHat } from "./cowboyHat";
+import { createCowboyBoots } from "./cowboyBoots";
+import type { MaterialModeId } from "../types/peanut";
 export interface PeanutModelHandle {
   group: THREE.Group;
   bodyMesh: THREE.Mesh<THREE.BufferGeometry, THREE.Material>;
@@ -17,7 +17,12 @@ export interface PeanutModelHandle {
   wireframeMaterial: THREE.MeshBasicMaterial;
   setMaterialMode: (mode: MaterialModeId) => void;
   setFuzzIntensity: (factor: number) => void;
-  animate: (time: number, isBreathing: boolean, bounceProgress: number, deltaSeconds?: number) => void;
+  animate: (
+    time: number,
+    isBreathing: boolean,
+    bounceProgress: number,
+    deltaSeconds?: number,
+  ) => void;
   setCowboyHat: (visible: boolean) => void;
   toggleCowboyHat: () => boolean;
   setCowboyBoots: (visible: boolean) => void;
@@ -38,16 +43,16 @@ function createPeanutBodyGeometry(radialSegments = 96, heightSegments = 120): TH
 
   // Smooth profile control points: [v, radius]
   const controls: Array<[number, number]> = [
-    [0.00, 0.00], // bottom pole
+    [0.0, 0.0], // bottom pole
     [0.06, 0.58], // rounded bottom dome
     [0.18, 0.82], // chubby lower base
     [0.32, 0.88], // lower bulb peak
-    [0.50, 0.70], // waist indent (gentle, cozy pinch)
-    [0.70, 0.82], // head bulb peak
+    [0.5, 0.7], // waist indent (gentle, cozy pinch)
+    [0.7, 0.82], // head bulb peak
     [0.85, 0.65], // head dome curves gracefully inward
     [0.92, 0.35], // head crest into tuft
     [0.97, 0.22], // tuft nub
-    [1.00, 0.00]  // tuft tip
+    [1.0, 0.0], // tuft tip
   ];
 
   function getRadius(vn: number): number {
@@ -64,12 +69,12 @@ function createPeanutBodyGeometry(radialSegments = 96, heightSegments = 120): TH
         const t = span > 0 ? (vn - p1[0]) / span : 0;
         const t2 = t * t;
         const t3 = t2 * t;
-        const val = 0.5 * (
-          (2 * p1[1]) +
-          (-p0[1] + p2[1]) * t +
-          (2 * p0[1] - 5 * p1[1] + 4 * p2[1] - p3[1]) * t2 +
-          (-p0[1] + 3 * p1[1] - 3 * p2[1] + p3[1]) * t3
-        );
+        const val =
+          0.5 *
+          (2 * p1[1] +
+            (-p0[1] + p2[1]) * t +
+            (2 * p0[1] - 5 * p1[1] + 4 * p2[1] - p3[1]) * t2 +
+            (-p0[1] + 3 * p1[1] - 3 * p2[1] + p3[1]) * t3);
         return Math.max(0, val);
       }
     }
@@ -77,8 +82,8 @@ function createPeanutBodyGeometry(radialSegments = 96, heightSegments = 120): TH
   }
 
   // Eye anchor coordinates for soft socket depressions
-  const eyeLeft = new THREE.Vector3(-0.26, 2.48, 0.80);
-  const eyeRight = new THREE.Vector3(0.26, 2.48, 0.80);
+  const eyeLeft = new THREE.Vector3(-0.26, 2.48, 0.8);
+  const eyeRight = new THREE.Vector3(0.26, 2.48, 0.8);
 
   for (let j = 0; j <= heightSegments; j++) {
     const v = j / heightSegments; // 0 (bottom) to 1 (top tuft)
@@ -147,9 +152,9 @@ function createPeanutBodyGeometry(radialSegments = 96, heightSegments = 120): TH
   }
 
   geometry.setIndex(indices);
-  geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-  geometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
-  geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+  geometry.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
+  geometry.setAttribute("normal", new THREE.Float32BufferAttribute(normals, 3));
+  geometry.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
   geometry.computeVertexNormals();
 
   return geometry;
@@ -170,7 +175,7 @@ function createBeadEye(x: number, y: number, z: number, rotationY: number): THRE
     metalness: 0.15,
     clearcoat: 1.0,
     clearcoatRoughness: 0.01,
-    reflectivity: 0.95
+    reflectivity: 0.95,
   });
 
   const beadMesh = new THREE.Mesh(beadGeom, beadMat);
@@ -181,7 +186,7 @@ function createBeadEye(x: number, y: number, z: number, rotationY: number): THRE
   const socketRingGeom = new THREE.TorusGeometry(eyeRadius * 0.96, 0.02, 12, 24);
   const socketRingMat = new THREE.MeshStandardMaterial({
     color: 0x5a3d24,
-    roughness: 0.95
+    roughness: 0.95,
   });
   const ringMesh = new THREE.Mesh(socketRingGeom, socketRingMat);
   ringMesh.position.z = -0.02;
@@ -195,11 +200,11 @@ function createSmileMesh(): THREE.Mesh {
   // Catmull-Rom spline curving across the front surface of the upper bulb
   // Sweet asymmetrical smirk matching reference photo
   const smilePoints = [
-    new THREE.Vector3(-0.13, 2.33, 0.80),
+    new THREE.Vector3(-0.13, 2.33, 0.8),
     new THREE.Vector3(-0.06, 2.27, 0.83),
-    new THREE.Vector3(0.00, 2.26, 0.835),
+    new THREE.Vector3(0.0, 2.26, 0.835),
     new THREE.Vector3(0.07, 2.29, 0.83),
-    new THREE.Vector3(0.14, 2.35, 0.80)
+    new THREE.Vector3(0.14, 2.35, 0.8),
   ];
 
   const curve = new THREE.CatmullRomCurve3(smilePoints);
@@ -207,7 +212,7 @@ function createSmileMesh(): THREE.Mesh {
   const threadMat = new THREE.MeshStandardMaterial({
     color: 0x1c1714,
     roughness: 0.85,
-    metalness: 0.05
+    metalness: 0.05,
   });
 
   const smileMesh = new THREE.Mesh(tubeGeom, threadMat);
@@ -218,7 +223,7 @@ function createSmileMesh(): THREE.Mesh {
 // Create one ribbed corduroy leg and bootie foot
 function createCorduroyLeg(
   isRight: boolean,
-  corduroyTextures: CorduroyTextureBundle
+  corduroyTextures: CorduroyTextureBundle,
 ): { legGroup: THREE.Group; footGroup: THREE.Group } {
   const legGroup = new THREE.Group();
 
@@ -226,7 +231,7 @@ function createCorduroyLeg(
     map: corduroyTextures.map,
     normalMap: corduroyTextures.normalMap,
     roughness: 0.88,
-    metalness: 0.02
+    metalness: 0.02,
   });
 
   // Leg stem cylinder
@@ -234,7 +239,7 @@ function createCorduroyLeg(
   const legRadius = 0.09;
   const legGeom = new THREE.CylinderGeometry(legRadius * 0.95, legRadius * 1.05, legHeight, 24);
   const legMesh = new THREE.Mesh(legGeom, corduroyMaterial);
-  legMesh.position.set(0, legHeight / 2 + 0.10, 0);
+  legMesh.position.set(0, legHeight / 2 + 0.1, 0);
   legMesh.castShadow = true;
   legMesh.receiveShadow = true;
   legGroup.add(legMesh);
@@ -247,7 +252,7 @@ function createCorduroyLeg(
   const footGeom = new THREE.SphereGeometry(0.16, 24, 18);
   footGeom.scale(0.95, 0.75, 1.45); // widen and extend along Z (toes)
   // Flatten the bottom of the foot at y = 0
-  const posAttr = footGeom.getAttribute('position');
+  const posAttr = footGeom.getAttribute("position");
   for (let k = 0; k < posAttr.count; k++) {
     const py = posAttr.getY(k);
     if (py < -0.06) {
@@ -257,7 +262,7 @@ function createCorduroyLeg(
   footGeom.computeVertexNormals();
 
   const footMesh = new THREE.Mesh(footGeom, corduroyMaterial);
-  footMesh.position.set(0, 0.10, 0.08); // center of foot slightly forward
+  footMesh.position.set(0, 0.1, 0.08); // center of foot slightly forward
   footMesh.castShadow = true;
   footMesh.receiveShadow = true;
   footGroup.add(footMesh);
@@ -266,7 +271,7 @@ function createCorduroyLeg(
   const cuffGeom = new THREE.TorusGeometry(legRadius * 1.15, 0.025, 12, 24);
   const cuffMesh = new THREE.Mesh(cuffGeom, corduroyMaterial);
   cuffMesh.rotation.x = Math.PI / 2;
-  cuffMesh.position.set(0, 0.20, 0);
+  cuffMesh.position.set(0, 0.2, 0);
   footGroup.add(cuffMesh);
 
   legGroup.add(footGroup);
@@ -290,11 +295,11 @@ function createCorduroyLeg(
 // Assemble complete Peanut character model
 export function createPeanutModel(): PeanutModelHandle {
   const rootGroup = new THREE.Group();
-  rootGroup.name = 'PeanutCharacterRoot';
+  rootGroup.name = "PeanutCharacterRoot";
 
   // Body container (for squash-and-stretch without displacing feet)
   const bodyContainer = new THREE.Group();
-  bodyContainer.name = 'PeanutBodyContainer';
+  bodyContainer.name = "PeanutBodyContainer";
   rootGroup.add(bodyContainer);
 
   // 1. Textures & Materials
@@ -312,33 +317,36 @@ export function createPeanutModel(): PeanutModelHandle {
     metalness: 0.0,
     sheen: 1.0,
     sheenColor: new THREE.Color(0xffe8c8), // golden cream velvet fiber halo
-    sheenRoughness: 0.65
+    sheenRoughness: 0.65,
   });
 
   // Smooth stylized vinyl toy material
   const smoothMaterial = new THREE.MeshStandardMaterial({
     color: 0xd9ab73,
     roughness: 0.28,
-    metalness: 0.04
+    metalness: 0.04,
   });
 
   // Wireframe material for inspect mode
   const wireframeMaterial = new THREE.MeshBasicMaterial({
     color: 0xc89255,
-    wireframe: true
+    wireframe: true,
   });
 
   // 2. Peanut Body Mesh
   const bodyGeometry = createPeanutBodyGeometry(96, 120);
-  const bodyMesh = new THREE.Mesh<THREE.BufferGeometry, THREE.Material>(bodyGeometry, fleeceMaterial);
+  const bodyMesh = new THREE.Mesh<THREE.BufferGeometry, THREE.Material>(
+    bodyGeometry,
+    fleeceMaterial,
+  );
   bodyMesh.castShadow = true;
   bodyMesh.receiveShadow = true;
   bodyContainer.add(bodyMesh);
 
   // 3. Face Details
   // Glossy black safety eyes
-  const leftEye = createBeadEye(-0.26, 2.48, 0.80, -0.22);
-  const rightEye = createBeadEye(0.26, 2.48, 0.80, 0.22);
+  const leftEye = createBeadEye(-0.26, 2.48, 0.8, -0.22);
+  const rightEye = createBeadEye(0.26, 2.48, 0.8, 0.22);
   bodyContainer.add(leftEye);
   bodyContainer.add(rightEye);
 
@@ -362,7 +370,7 @@ export function createPeanutModel(): PeanutModelHandle {
     map: shadowTexture,
     transparent: true,
     opacity: 0.85,
-    depthWrite: false
+    depthWrite: false,
   });
   const shadowMesh = new THREE.Mesh(shadowGeom, shadowMat);
   shadowMesh.rotation.x = -Math.PI / 2;
@@ -371,9 +379,9 @@ export function createPeanutModel(): PeanutModelHandle {
 
   // Mode switching
   function setMaterialMode(mode: MaterialModeId) {
-    if (mode === 'fleece') {
+    if (mode === "fleece") {
       bodyMesh.material = fleeceMaterial;
-    } else if (mode === 'smooth') {
+    } else if (mode === "smooth") {
       bodyMesh.material = smoothMaterial;
     } else {
       bodyMesh.material = wireframeMaterial;
@@ -387,7 +395,12 @@ export function createPeanutModel(): PeanutModelHandle {
   }
 
   // Animation update
-  function animate(time: number, isBreathing: boolean, bounceProgress: number, deltaSeconds = 0.016) {
+  function animate(
+    time: number,
+    isBreathing: boolean,
+    bounceProgress: number,
+    deltaSeconds = 0.016,
+  ) {
     cowboyHatHandle.update(deltaSeconds);
     cowboyBootsHandle.update(deltaSeconds);
     let breatheScaleY = 1.0;
@@ -409,14 +422,14 @@ export function createPeanutModel(): PeanutModelHandle {
       const p = bounceProgress;
       const jumpHeight = Math.sin(p * Math.PI) * 0.38;
       const squashStretchY = 1.0 + Math.sin(p * Math.PI * 2) * 0.15;
-      const squashStretchXZ = 1.0 - Math.sin(p * Math.PI * 2) * 0.10;
+      const squashStretchXZ = 1.0 - Math.sin(p * Math.PI * 2) * 0.1;
       const wiggleZ = Math.sin(p * Math.PI * 4) * 0.08;
 
       rootGroup.position.y = jumpHeight;
       bodyContainer.scale.set(
         breatheScaleXZ * squashStretchXZ,
         breatheScaleY * squashStretchY,
-        breatheScaleXZ * squashStretchXZ
+        breatheScaleXZ * squashStretchXZ,
       );
       bodyContainer.rotation.z = swayTiltZ + wiggleZ;
       bodyContainer.rotation.x = swayTiltX;
@@ -461,6 +474,6 @@ export function createPeanutModel(): PeanutModelHandle {
     toggleCowboyHat: cowboyHatHandle.toggle,
     setCowboyBoots: cowboyBootsHandle.setVisible,
     toggleCowboyBoots: cowboyBootsHandle.toggle,
-    dispose
+    dispose,
   };
 }

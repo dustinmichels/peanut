@@ -4,20 +4,20 @@ const props = withDefaults(
     modelValue?: boolean;
   }>(),
   {
-    modelValue: false
-  }
+    modelValue: false,
+  },
 );
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', val: boolean): void;
+  (e: "update:modelValue", val: boolean): void;
 }>();
 
 function toggle() {
-  emit('update:modelValue', !props.modelValue);
+  emit("update:modelValue", !props.modelValue);
 }
 
 function onKeydown(e: KeyboardEvent) {
-  if (e.key === ' ' || e.key === 'Enter') {
+  if (e.key === " " || e.key === "Enter") {
     e.preventDefault();
     toggle();
   }
@@ -41,7 +41,7 @@ function onKeydown(e: KeyboardEvent) {
         </span>
         <span class="cowboy-title">Cowboy Mode</span>
         <span class="cowboy-status-badge" :class="{ 'badge-active': modelValue }">
-          {{ modelValue ? 'ON' : 'OFF' }}
+          {{ modelValue ? "ON" : "OFF" }}
         </span>
       </div>
 
@@ -144,15 +144,25 @@ function onKeydown(e: KeyboardEvent) {
 }
 
 @keyframes hatWiggle {
-  0% { transform: scale(1) rotate(0deg); }
-  35% { transform: scale(1.25) rotate(-14deg); }
-  65% { transform: scale(1.18) rotate(10deg); }
-  85% { transform: scale(1.12) rotate(-4deg); }
-  100% { transform: scale(1.12) rotate(6deg); }
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+  35% {
+    transform: scale(1.25) rotate(-14deg);
+  }
+  65% {
+    transform: scale(1.18) rotate(10deg);
+  }
+  85% {
+    transform: scale(1.12) rotate(-4deg);
+  }
+  100% {
+    transform: scale(1.12) rotate(6deg);
+  }
 }
 
 .cowboy-title {
-  font-family: 'Fredoka', 'Nunito', 'Quicksand', ui-rounded, sans-serif;
+  font-family: "Fredoka", "Nunito", "Quicksand", ui-rounded, sans-serif;
   font-size: 0.96rem;
   font-weight: 700;
   color: #553319;
@@ -163,7 +173,7 @@ function onKeydown(e: KeyboardEvent) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Fredoka', 'Nunito', sans-serif;
+  font-family: "Fredoka", "Nunito", sans-serif;
   font-size: 0.66rem;
   font-weight: 800;
   letter-spacing: 0.05em;
@@ -190,7 +200,9 @@ function onKeydown(e: KeyboardEvent) {
   background: #dfcdbd;
   padding: 3px;
   box-sizing: border-box;
-  transition: background-color 0.28s ease, box-shadow 0.28s ease;
+  transition:
+    background-color 0.28s ease,
+    box-shadow 0.28s ease;
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.12);
   display: flex;
   align-items: center;
@@ -217,7 +229,9 @@ function onKeydown(e: KeyboardEvent) {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease;
+  transition:
+    transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+    background-color 0.2s ease;
 }
 
 .thumb-on {

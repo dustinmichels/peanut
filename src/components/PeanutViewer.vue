@@ -1,11 +1,7 @@
 <script setup lang="ts">
-import { onMounted, useTemplateRef, shallowRef, watch } from 'vue';
-import { usePeanutScene } from '../composables/usePeanutScene';
-import type {
-  LightingPresetId,
-  MaterialModeId,
-  ViewPresetId
-} from '../types/peanut';
+import { onMounted, useTemplateRef, shallowRef, watch } from "vue";
+import { usePeanutScene } from "../composables/usePeanutScene";
+import type { LightingPresetId, MaterialModeId, ViewPresetId } from "../types/peanut";
 
 const props = defineProps<{
   currentView: ViewPresetId;
@@ -19,11 +15,11 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: 'bounced'): void;
-  (e: 'update:cowboyHat', val: boolean): void;
-  (e: 'update:cowboyBoots', val: boolean): void;
+  (e: "bounced"): void;
+  (e: "update:cowboyHat", val: boolean): void;
+  (e: "update:cowboyBoots", val: boolean): void;
 }>();
-const containerRef = useTemplateRef<HTMLDivElement>('canvasContainer');
+const containerRef = useTemplateRef<HTMLDivElement>("canvasContainer");
 const hasInteracted = shallowRef(false);
 
 const {
@@ -41,7 +37,7 @@ const {
   toggleCowboyHat,
   cowboyBootsActive,
   setCowboyBoots,
-  toggleCowboyBoots
+  toggleCowboyBoots,
 } = usePeanutScene();
 // Differentiate drag from click
 let pointerDownTime = 0;
@@ -62,7 +58,7 @@ function onPointerUp(e: PointerEvent) {
   // Finger touches move up to 16px on tap release
   if (duration < 350 && dist < 16) {
     triggerBounce();
-    emit('bounced');
+    emit("bounced");
     hasInteracted.value = true;
   }
 }
@@ -76,10 +72,10 @@ onMounted(() => {
     setFuzzIntensity(props.fuzzIntensity);
     toggleAutoRotate(props.autoRotate);
     toggleBreathing(props.breathing);
-    if (typeof props.showCowboyHat === 'boolean') {
+    if (typeof props.showCowboyHat === "boolean") {
       setCowboyHat(props.showCowboyHat);
     }
-    if (typeof props.showCowboyBoots === 'boolean') {
+    if (typeof props.showCowboyBoots === "boolean") {
       setCowboyBoots(props.showCowboyBoots);
     }
     setTimeout(() => {
@@ -90,18 +86,18 @@ onMounted(() => {
 watch(
   () => props.showCowboyHat,
   (val) => {
-    if (typeof val === 'boolean' && val !== cowboyHatActive.value) {
+    if (typeof val === "boolean" && val !== cowboyHatActive.value) {
       setCowboyHat(val);
     }
-  }
+  },
 );
 watch(
   () => props.showCowboyBoots,
   (val) => {
-    if (typeof val === 'boolean' && val !== cowboyBootsActive.value) {
+    if (typeof val === "boolean" && val !== cowboyBootsActive.value) {
       setCowboyBoots(val);
     }
-  }
+  },
 );
 
 defineExpose({
@@ -117,7 +113,7 @@ defineExpose({
   toggleCowboyHat,
   cowboyBootsActive,
   setCowboyBoots,
-  toggleCowboyBoots
+  toggleCowboyBoots,
 });
 </script>
 

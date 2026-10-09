@@ -1,8 +1,8 @@
-import { shallowRef, onUnmounted } from 'vue';
-import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { createPeanutModel, type PeanutModelHandle } from '../utils/peanutModel';
-import type { LightingPresetId, MaterialModeId, ViewPresetId } from '../types/peanut';
+import { shallowRef, onUnmounted } from "vue";
+import * as THREE from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { createPeanutModel, type PeanutModelHandle } from "../utils/peanutModel";
+import type { LightingPresetId, MaterialModeId, ViewPresetId } from "../types/peanut";
 
 export interface CameraPresetConfig {
   position: THREE.Vector3;
@@ -13,24 +13,24 @@ const VIEW_PRESETS: Record<ViewPresetId, CameraPresetConfig> = {
   // Matches the exact 3/4 hero camera angle in the reference image
   photo: {
     position: new THREE.Vector3(2.8, 2.4, 6.7),
-    target: new THREE.Vector3(0.0, 1.65, 0.0)
+    target: new THREE.Vector3(0.0, 1.65, 0.0),
   },
   front: {
     position: new THREE.Vector3(0.0, 1.9, 6.7),
-    target: new THREE.Vector3(0.0, 1.65, 0.0)
+    target: new THREE.Vector3(0.0, 1.65, 0.0),
   },
   face: {
     position: new THREE.Vector3(0.7, 2.7, 3.5),
-    target: new THREE.Vector3(0.0, 2.35, 0.4)
+    target: new THREE.Vector3(0.0, 2.35, 0.4),
   },
   feet: {
     position: new THREE.Vector3(1.1, 0.8, 2.6),
-    target: new THREE.Vector3(0.0, 0.35, 0.0)
+    target: new THREE.Vector3(0.0, 0.35, 0.0),
   },
   side: {
     position: new THREE.Vector3(5.6, 1.7, 0.0),
-    target: new THREE.Vector3(0.0, 1.5, 0.0)
-  }
+    target: new THREE.Vector3(0.0, 1.5, 0.0),
+  },
 };
 
 export function usePeanutScene() {
@@ -78,7 +78,7 @@ export function usePeanutScene() {
     // 3. Renderer with soft PCF shadows and ACES Filmic tone mapping
     renderer = new THREE.WebGLRenderer({
       antialias: true,
-      powerPreference: 'high-performance'
+      powerPreference: "high-performance",
     });
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -99,7 +99,7 @@ export function usePeanutScene() {
     controls.maxDistance = 10.0;
     controls.touches = {
       ONE: THREE.TOUCH.ROTATE,
-      TWO: THREE.TOUCH.DOLLY_PAN
+      TWO: THREE.TOUCH.DOLLY_PAN,
     };
     // 5. Lighting Setup
     // Key Light: warm studio soft light
@@ -140,7 +140,7 @@ export function usePeanutScene() {
     const groundMat = new THREE.MeshStandardMaterial({
       color: 0xf5f3f0,
       roughness: 0.95,
-      metalness: 0.0
+      metalness: 0.0,
     });
     const groundMesh = new THREE.Mesh(groundGeom, groundMat);
     groundMesh.rotation.x = -Math.PI / 2;
@@ -164,7 +164,9 @@ export function usePeanutScene() {
       const baseFov = 34;
       if (currentAspect < 1.0) {
         const halfBaseRad = THREE.MathUtils.degToRad(baseFov / 2);
-        const targetHalfH = Math.atan(Math.tan(halfBaseRad) * (1.1 / Math.max(currentAspect, 0.42)));
+        const targetHalfH = Math.atan(
+          Math.tan(halfBaseRad) * (1.1 / Math.max(currentAspect, 0.42)),
+        );
         const adaptiveFov = THREE.MathUtils.radToDeg(targetHalfH * 2);
         camera.fov = Math.min(Math.max(adaptiveFov, 34), 58);
       } else {
@@ -254,7 +256,7 @@ export function usePeanutScene() {
   function setLightingPreset(presetId: LightingPresetId) {
     if (!scene || !keyLight || !fillLight || !rimLight || !hemiLight) return;
 
-    if (presetId === 'studio') {
+    if (presetId === "studio") {
       scene.background = new THREE.Color(0xf6f5f3);
       keyLight.color.setHex(0xfff6ee);
       keyLight.intensity = 2.2;
@@ -265,7 +267,7 @@ export function usePeanutScene() {
       hemiLight.color.setHex(0xfff7ed);
       hemiLight.groundColor.setHex(0xdfd8ce);
       hemiLight.intensity = 0.85;
-    } else if (presetId === 'golden') {
+    } else if (presetId === "golden") {
       scene.background = new THREE.Color(0xfbf3e8);
       keyLight.color.setHex(0xffcb85);
       keyLight.intensity = 2.8;
@@ -276,7 +278,7 @@ export function usePeanutScene() {
       hemiLight.color.setHex(0xffddb0);
       hemiLight.groundColor.setHex(0x9d6f46);
       hemiLight.intensity = 0.95;
-    } else if (presetId === 'daylight') {
+    } else if (presetId === "daylight") {
       scene.background = new THREE.Color(0xf0f5fa);
       keyLight.color.setHex(0xffffff);
       keyLight.intensity = 2.4;
@@ -287,7 +289,7 @@ export function usePeanutScene() {
       hemiLight.color.setHex(0xe8f0fa);
       hemiLight.groundColor.setHex(0xd0d8e2);
       hemiLight.intensity = 0.9;
-    } else if (presetId === 'dramatic') {
+    } else if (presetId === "dramatic") {
       scene.background = new THREE.Color(0x23201e);
       keyLight.color.setHex(0xffebcf);
       keyLight.intensity = 3.4;
@@ -319,11 +321,11 @@ export function usePeanutScene() {
   }
 
   function toggleAutoRotate(val?: boolean) {
-    autoRotateActive.value = typeof val === 'boolean' ? val : !autoRotateActive.value;
+    autoRotateActive.value = typeof val === "boolean" ? val : !autoRotateActive.value;
   }
 
   function toggleBreathing(val?: boolean) {
-    breathingActive.value = typeof val === 'boolean' ? val : !breathingActive.value;
+    breathingActive.value = typeof val === "boolean" ? val : !breathingActive.value;
   }
 
   function setCowboyHat(val: boolean) {
@@ -334,7 +336,7 @@ export function usePeanutScene() {
   }
 
   function toggleCowboyHat(val?: boolean): boolean {
-    const next = typeof val === 'boolean' ? val : !cowboyHatActive.value;
+    const next = typeof val === "boolean" ? val : !cowboyHatActive.value;
     setCowboyHat(next);
     return next;
   }
@@ -347,7 +349,7 @@ export function usePeanutScene() {
   }
 
   function toggleCowboyBoots(val?: boolean): boolean {
-    const next = typeof val === 'boolean' ? val : !cowboyBootsActive.value;
+    const next = typeof val === "boolean" ? val : !cowboyBootsActive.value;
     setCowboyBoots(next);
     return next;
   }
@@ -404,6 +406,6 @@ export function usePeanutScene() {
     cowboyBootsActive,
     setCowboyBoots,
     toggleCowboyBoots,
-    dispose
+    dispose,
   };
 }

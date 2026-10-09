@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { shallowRef, useTemplateRef } from 'vue';
-import AppHeader from './components/AppHeader.vue';
-import PeanutViewer from './components/PeanutViewer.vue';
-import CowboyModeSwitch from './components/CowboyModeSwitch.vue';
+import { shallowRef, useTemplateRef } from "vue";
+import AppHeader from "./components/AppHeader.vue";
+import PeanutViewer from "./components/PeanutViewer.vue";
+import CowboyModeSwitch from "./components/CowboyModeSwitch.vue";
 
-const viewerRef = useTemplateRef<InstanceType<typeof PeanutViewer>>('viewer');
+const viewerRef = useTemplateRef<InstanceType<typeof PeanutViewer>>("viewer");
 const cowboyMode = shallowRef(false);
 
 function handleBounce() {

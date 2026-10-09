@@ -1,37 +1,37 @@
 <script setup lang="ts">
-import { shallowRef } from 'vue';
+import { shallowRef } from "vue";
 
 defineProps<{
   visible: boolean;
 }>();
 
 const emit = defineEmits<{
-  (e: 'close'): void;
+  (e: "close"): void;
 }>();
 
 const isMinimized = shallowRef(false);
 
 const features = [
   {
-    title: 'Peanut Silhouette',
-    desc: 'Dual-bulb pinched waist with organic asymmetry and cute top tuft'
+    title: "Peanut Silhouette",
+    desc: "Dual-bulb pinched waist with organic asymmetry and cute top tuft",
   },
   {
-    title: 'Bouclé Fleece',
-    desc: 'Procedural curly sherpa plush texture with velvet sheen rim highlights'
+    title: "Bouclé Fleece",
+    desc: "Procedural curly sherpa plush texture with velvet sheen rim highlights",
   },
   {
-    title: 'Safety Bead Eyes',
-    desc: 'Glossy black bead eyes nestled in plush sockets with specular catchlights'
+    title: "Safety Bead Eyes",
+    desc: "Glossy black bead eyes nestled in plush sockets with specular catchlights",
   },
   {
-    title: 'Stitched Smile',
-    desc: 'Friendly asymmetrical smirk embroidered across the upper bulb'
+    title: "Stitched Smile",
+    desc: "Friendly asymmetrical smirk embroidered across the upper bulb",
   },
   {
-    title: 'Corduroy Booties',
-    desc: 'Brown vertically ribbed corduroy legs and stable standing shoe feet'
-  }
+    title: "Corduroy Booties",
+    desc: "Brown vertically ribbed corduroy legs and stable standing shoe feet",
+  },
 ];
 
 function toggleMinimize() {
@@ -55,7 +55,13 @@ function toggleMinimize() {
           :title="isMinimized ? 'Expand' : 'Minimize'"
           @click="toggleMinimize"
         >
-          <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg
+            class="icon-svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <g v-if="!isMinimized">
               <polyline points="4 14 10 14 10 20" />
               <polyline points="20 10 14 10 14 4" />
@@ -67,13 +73,14 @@ function toggleMinimize() {
           </svg>
         </button>
 
-        <button
-          type="button"
-          class="icon-btn"
-          title="Close comparison"
-          @click="emit('close')"
-        >
-          <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <button type="button" class="icon-btn" title="Close comparison" @click="emit('close')">
+          <svg
+            class="icon-svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <line x1="18" y1="6" x2="6" y2="18" />
             <line x1="6" y1="6" x2="18" y2="18" />
           </svg>
@@ -120,7 +127,9 @@ function toggleMinimize() {
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(220, 205, 185, 0.55);
   border-radius: 1.25rem;
-  box-shadow: 0 12px 36px rgba(95, 65, 30, 0.15), 0 2px 6px rgba(0, 0, 0, 0.04);
+  box-shadow:
+    0 12px 36px rgba(95, 65, 30, 0.15),
+    0 2px 6px rgba(0, 0, 0, 0.04);
   overflow: hidden;
   transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -308,8 +317,12 @@ function toggleMinimize() {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideUpSheet {

@@ -1,5 +1,5 @@
-import * as THREE from 'three';
-import type { MaterialModeId } from '../types/peanut';
+import * as THREE from "three";
+import type { MaterialModeId } from "../types/peanut";
 
 export interface CowboyBootsHandle {
   leftBoot: THREE.Group;
@@ -29,16 +29,15 @@ function createShaftGeometry(isRight: boolean): THREE.BufferGeometry {
       const flare = v * v;
       const ankle = Math.sin(Math.PI * v);
       const rx = 0.137 + 0.028 * flare - 0.018 * ankle - layer * 0.012;
-      const rz = 0.155 + 0.030 * flare - 0.018 * ankle - layer * 0.012;
+      const rz = 0.155 + 0.03 * flare - 0.018 * ankle - layer * 0.012;
       for (let i = 0; i < radialSegments; i++) {
-        const theta = i / radialSegments * Math.PI * 2;
+        const theta = (i / radialSegments) * Math.PI * 2;
         const front = Math.max(0, Math.cos(theta));
-        const y = 0.155 + v * 0.505 + front * 0.035 * (1 - v)
-          - Math.cos(2 * theta) * 0.04 * v * v;
+        const y = 0.155 + v * 0.505 + front * 0.035 * (1 - v) - Math.cos(2 * theta) * 0.04 * v * v;
         vertices.push(
           Math.sin(theta) * rx + (isRight ? -0.012 : 0.012) * v,
           y,
-          Math.cos(theta) * rz - 0.012 * (1 - v)
+          Math.cos(theta) * rz - 0.012 * (1 - v),
         );
         uvs.push(i / radialSegments, v);
       }
@@ -58,11 +57,11 @@ function createShaftGeometry(isRight: boolean): THREE.BufferGeometry {
   // Join the outer leather to the lining without closing the opening.
   for (let i = 0; i < radialSegments; i++) {
     const a = heightSegments * stride + i;
-    const b = heightSegments * stride + (i + 1) % radialSegments;
+    const b = heightSegments * stride + ((i + 1) % radialSegments);
     indices.push(a, b, a + layerSize, b, b + layerSize, a + layerSize);
   }
-  geom.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-  geom.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+  geom.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
+  geom.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
   geom.setIndex(indices);
   geom.computeVertexNormals();
   return geom;
@@ -73,10 +72,14 @@ function bootProfile(t: number) {
   const heelRound = Math.sqrt(Math.max(0, 1 - Math.pow(Math.max(0, (0.16 - t) / 0.17), 2)));
   const toe = THREE.MathUtils.smoothstep(t, 0.64, 1);
   const halfW = (0.143 + 0.017 * Math.sin(Math.PI * t) - 0.12 * toe) * heelRound;
-  const soleY = 0.032 + 0.053 * (1 - THREE.MathUtils.smoothstep(t, 0.28, 0.62))
-    + 0.028 * Math.pow(Math.max(0, (t - 0.72) / 0.28), 2);
-  const topY = 0.17 + 0.12 * Math.exp(-Math.pow((t - 0.34) / 0.28, 2))
-    - 0.055 * THREE.MathUtils.smoothstep(t, 0.55, 1);
+  const soleY =
+    0.032 +
+    0.053 * (1 - THREE.MathUtils.smoothstep(t, 0.28, 0.62)) +
+    0.028 * Math.pow(Math.max(0, (t - 0.72) / 0.28), 2);
+  const topY =
+    0.17 +
+    0.12 * Math.exp(-Math.pow((t - 0.34) / 0.28, 2)) -
+    0.055 * THREE.MathUtils.smoothstep(t, 0.55, 1);
   return { halfW, soleY, topY };
 }
 
@@ -95,7 +98,7 @@ function createFootGeometry(isRight: boolean): THREE.BufferGeometry {
 
   // Foot extends from heel to toe tip
   const zStart = -0.22;
-  const zEnd = 0.40;
+  const zEnd = 0.4;
 
   for (let j = 0; j <= zSegments; j++) {
     const t = j / zSegments;
@@ -123,8 +126,8 @@ function createFootGeometry(isRight: boolean): THREE.BufferGeometry {
     for (let i = 0; i < crossSegments; i++) {
       const a = j * stride + i;
       const b = (j + 1) * stride + i;
-      const c = (j + 1) * stride + (i + 1) % crossSegments;
-      const d = j * stride + (i + 1) % crossSegments;
+      const c = (j + 1) * stride + ((i + 1) % crossSegments);
+      const d = j * stride + ((i + 1) % crossSegments);
 
       indices.push(a, b, d);
       indices.push(d, b, c);
@@ -148,11 +151,11 @@ function createFootGeometry(isRight: boolean): THREE.BufferGeometry {
   vertices.push(frontXIncline, (front.soleY + front.topY) * 0.5, zEnd);
   uvs.push(0.5, 1);
   for (let i = 0; i < crossSegments; i++) {
-    indices.push(frontCenterIdx, frontRowStart + (i + 1) % crossSegments, frontRowStart + i);
+    indices.push(frontCenterIdx, frontRowStart + ((i + 1) % crossSegments), frontRowStart + i);
   }
 
-  geom.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-  geom.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+  geom.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
+  geom.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
   geom.setIndex(indices);
   geom.computeVertexNormals();
 
@@ -220,8 +223,8 @@ function createSoleGeometry(isRight: boolean): THREE.BufferGeometry {
   indices.push(last + 0, last + 1, last + 2);
   indices.push(last + 0, last + 2, last + 3);
 
-  geom.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-  geom.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+  geom.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
+  geom.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
   geom.setIndex(indices);
   geom.computeVertexNormals();
 
@@ -285,8 +288,8 @@ function createHeelGeometry(): THREE.BufferGeometry {
     indices.push(bottomCenterIdx, i, i + 1);
   }
 
-  geom.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-  geom.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+  geom.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
+  geom.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
   geom.setIndex(indices);
   geom.computeVertexNormals();
 
@@ -309,7 +312,7 @@ function createPullTabMesh(isRightSide: boolean, material: THREE.Material): THRE
     bevelEnabled: true,
     bevelThickness: 0.003,
     bevelSize: 0.003,
-    bevelSegments: 1
+    bevelSegments: 1,
   });
   geom.center();
 
@@ -341,10 +344,10 @@ function easeOutBack(x: number): number {
 function buildBoot(
   isRight: boolean,
   leatherMaterial: THREE.Material,
-  stackedMaterial: THREE.Material
+  stackedMaterial: THREE.Material,
 ) {
   const root = new THREE.Group();
-  root.name = isRight ? 'RightCowboyBoot' : 'LeftCowboyBoot';
+  root.name = isRight ? "RightCowboyBoot" : "LeftCowboyBoot";
 
   // 1. Shaft
   const shaftGeom = createShaftGeometry(isRight);
@@ -386,7 +389,7 @@ function buildBoot(
     soleMesh,
     heelMesh,
     pullTabR,
-    pullTabL
+    pullTabL,
   };
 }
 
@@ -397,7 +400,7 @@ export function createCowboyBoots(
   leftLeg: THREE.Group,
   rightLeg: THREE.Group,
   leftFoot: THREE.Group,
-  rightFoot: THREE.Group
+  rightFoot: THREE.Group,
 ): CowboyBootsHandle {
   // 1. Materials
   // Warm saddle leather (rich, plush/toy compliant)
@@ -409,38 +412,38 @@ export function createCowboyBoots(
     clearcoatRoughness: 0.35,
     sheen: 0.5,
     sheenColor: new THREE.Color(0xb57a4a),
-    side: THREE.DoubleSide
+    side: THREE.DoubleSide,
   });
 
   const leatherSmoothMaterial = new THREE.MeshStandardMaterial({
     color: 0x7c431f,
     roughness: 0.28,
     metalness: 0.06,
-    side: THREE.DoubleSide
+    side: THREE.DoubleSide,
   });
 
   const leatherWireframeMaterial = new THREE.MeshBasicMaterial({
     color: 0xca7734,
     wireframe: true,
-    side: THREE.DoubleSide
+    side: THREE.DoubleSide,
   });
 
   // Dark chocolate stacked leather (sole & heel)
   const stackedFeltMaterial = new THREE.MeshStandardMaterial({
     color: 0x221208,
     roughness: 0.75,
-    metalness: 0.04
+    metalness: 0.04,
   });
 
   const stackedSmoothMaterial = new THREE.MeshStandardMaterial({
     color: 0x28150a,
     roughness: 0.32,
-    metalness: 0.06
+    metalness: 0.06,
   });
 
   const stackedWireframeMaterial = new THREE.MeshBasicMaterial({
     color: 0x5a2d12,
-    wireframe: true
+    wireframe: true,
   });
 
   // 2. Build left and right boots
@@ -463,10 +466,10 @@ export function createCowboyBoots(
     let leatherMat: THREE.Material = leatherFeltMaterial;
     let stackedMat: THREE.Material = stackedFeltMaterial;
 
-    if (mode === 'smooth') {
+    if (mode === "smooth") {
       leatherMat = leatherSmoothMaterial;
       stackedMat = stackedSmoothMaterial;
-    } else if (mode === 'wireframe') {
+    } else if (mode === "wireframe") {
       leatherMat = leatherWireframeMaterial;
       stackedMat = stackedWireframeMaterial;
     }
@@ -578,6 +581,6 @@ export function createCowboyBoots(
     dispose,
     get isVisible() {
       return isVisible;
-    }
+    },
   };
 }

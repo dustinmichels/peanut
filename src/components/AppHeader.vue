@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const emit = defineEmits<{
-  (e: 'bounce'): void;
+  (e: "bounce"): void;
 }>();
 </script>
 
@@ -62,7 +62,9 @@ const emit = defineEmits<{
     0 14px 38px -4px rgba(120, 70, 20, 0.13),
     0 4px 14px rgba(120, 70, 20, 0.06),
     inset 0 1px 0 #ffffff;
-  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.28s ease;
+  transition:
+    transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.28s ease;
   user-select: none;
 }
 
@@ -93,7 +95,8 @@ const emit = defineEmits<{
 }
 
 @keyframes peanut-idle {
-  0%, 100% {
+  0%,
+  100% {
     transform: rotate(0deg) scale(1);
   }
   25% {
@@ -126,7 +129,11 @@ const emit = defineEmits<{
   width: 32px;
   height: 8px;
   border-radius: 50%;
-  background: radial-gradient(ellipse at center, rgba(255, 140, 140, 0.35) 0%, rgba(255, 140, 140, 0) 75%);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 140, 140, 0.35) 0%,
+    rgba(255, 140, 140, 0) 75%
+  );
   pointer-events: none;
 }
 
@@ -139,7 +146,9 @@ const emit = defineEmits<{
 
 .brand-title {
   margin: 0;
-  font-family: 'Fredoka', 'Nunito', 'Quicksand', ui-rounded, 'Hiragino Maru Gothic ProN', 'Arial Rounded MT Bold', sans-serif;
+  font-family:
+    "Fredoka", "Nunito", "Quicksand", ui-rounded, "Hiragino Maru Gothic ProN",
+    "Arial Rounded MT Bold", sans-serif;
   font-size: 2.1rem;
   font-weight: 700;
   color: #3d210d;
@@ -163,7 +172,7 @@ const emit = defineEmits<{
   gap: 0.5rem;
   padding: 0.65rem 1.35rem;
   border-radius: 9999px;
-  font-family: 'Fredoka', 'Nunito', 'Quicksand', sans-serif;
+  font-family: "Fredoka", "Nunito", "Quicksand", sans-serif;
   font-size: 0.98rem;
   font-weight: 600;
   color: #4b3823;
@@ -205,8 +214,13 @@ const emit = defineEmits<{
 }
 
 @keyframes sparkle-twinkle {
-  0%, 100% { transform: scale(1) rotate(0deg); }
-  50% { transform: scale(1.2) rotate(15deg); }
+  0%,
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    transform: scale(1.2) rotate(15deg);
+  }
 }
 
 @media (max-width: 640px) {

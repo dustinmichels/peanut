@@ -1,10 +1,6 @@
 <script setup lang="ts">
-import { shallowRef } from 'vue';
-import type {
-  LightingPresetId,
-  MaterialModeId,
-  ViewPresetId
-} from '../types/peanut';
+import { shallowRef } from "vue";
+import type { LightingPresetId, MaterialModeId, ViewPresetId } from "../types/peanut";
 
 defineProps<{
   currentView: ViewPresetId;
@@ -17,42 +13,42 @@ defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: 'update:view', val: ViewPresetId): void;
-  (e: 'update:lighting', val: LightingPresetId): void;
-  (e: 'update:material', val: MaterialModeId): void;
-  (e: 'update:fuzz', val: number): void;
-  (e: 'toggle:autoRotate'): void;
-  (e: 'toggle:breathing'): void;
-  (e: 'toggle:cowboyMode'): void;
-  (e: 'trigger:bounce'): void;
+  (e: "update:view", val: ViewPresetId): void;
+  (e: "update:lighting", val: LightingPresetId): void;
+  (e: "update:material", val: MaterialModeId): void;
+  (e: "update:fuzz", val: number): void;
+  (e: "toggle:autoRotate"): void;
+  (e: "toggle:breathing"): void;
+  (e: "toggle:cowboyMode"): void;
+  (e: "trigger:bounce"): void;
 }>();
 
-const activeTab = shallowRef<'view' | 'material' | 'light' | 'animate'>('view');
+const activeTab = shallowRef<"view" | "material" | "light" | "animate">("view");
 
 const viewOptions: Array<{ id: ViewPresetId; label: string; icon: string }> = [
-  { id: 'photo', label: 'Photo Hero', icon: '📸' },
-  { id: 'face', label: 'Cute Face', icon: '👀' },
-  { id: 'front', label: 'Front', icon: '🧍' },
-  { id: 'feet', label: 'Booties', icon: '👞' },
-  { id: 'side', label: 'Profile', icon: '🥜' }
+  { id: "photo", label: "Photo Hero", icon: "📸" },
+  { id: "face", label: "Cute Face", icon: "👀" },
+  { id: "front", label: "Front", icon: "🧍" },
+  { id: "feet", label: "Booties", icon: "👞" },
+  { id: "side", label: "Profile", icon: "🥜" },
 ];
 
 const materialOptions: Array<{ id: MaterialModeId; label: string; icon: string }> = [
-  { id: 'fleece', label: 'Bouclé Fleece', icon: '🧶' },
-  { id: 'smooth', label: 'Smooth Toy', icon: '✨' },
-  { id: 'wireframe', label: 'Wireframe', icon: '📐' }
+  { id: "fleece", label: "Bouclé Fleece", icon: "🧶" },
+  { id: "smooth", label: "Smooth Toy", icon: "✨" },
+  { id: "wireframe", label: "Wireframe", icon: "📐" },
 ];
 
 const lightingOptions: Array<{ id: LightingPresetId; label: string; icon: string }> = [
-  { id: 'studio', label: 'Studio Warm', icon: '💡' },
-  { id: 'golden', label: 'Golden Hour', icon: '🌅' },
-  { id: 'daylight', label: 'Daylight', icon: '☀️' },
-  { id: 'dramatic', label: 'Spotlight', icon: '🎭' }
+  { id: "studio", label: "Studio Warm", icon: "💡" },
+  { id: "golden", label: "Golden Hour", icon: "🌅" },
+  { id: "daylight", label: "Daylight", icon: "☀️" },
+  { id: "dramatic", label: "Spotlight", icon: "🎭" },
 ];
 
 function onFuzzChange(event: Event) {
   const target = event.target as HTMLInputElement;
-  emit('update:fuzz', parseFloat(target.value));
+  emit("update:fuzz", parseFloat(target.value));
 }
 </script>
 
@@ -162,11 +158,7 @@ function onFuzzChange(event: Event) {
 
       <!-- 4. Animation & Physics -->
       <div v-show="activeTab === 'animate'" class="panel-row">
-        <button
-          type="button"
-          class="chip-btn bounce-action-btn"
-          @click="emit('trigger:bounce')"
-        >
+        <button type="button" class="chip-btn bounce-action-btn" @click="emit('trigger:bounce')">
           <span class="chip-icon">🦘</span>
           <span>Bounce!</span>
         </button>
@@ -178,7 +170,7 @@ function onFuzzChange(event: Event) {
           @click="emit('toggle:cowboyMode')"
         >
           <span class="chip-icon">🤠</span>
-          <span>Cowboy Mode ({{ cowboyMode ? 'ON' : 'OFF' }})</span>
+          <span>Cowboy Mode ({{ cowboyMode ? "ON" : "OFF" }})</span>
         </button>
         <button
           type="button"
@@ -187,7 +179,7 @@ function onFuzzChange(event: Event) {
           @click="emit('toggle:breathing')"
         >
           <span class="chip-icon">🫁</span>
-          <span>Breathe ({{ breathing ? 'ON' : 'OFF' }})</span>
+          <span>Breathe ({{ breathing ? "ON" : "OFF" }})</span>
         </button>
 
         <button
@@ -197,7 +189,7 @@ function onFuzzChange(event: Event) {
           @click="emit('toggle:autoRotate')"
         >
           <span class="chip-icon">🔄</span>
-          <span>360° Spin ({{ autoRotate ? 'ON' : 'OFF' }})</span>
+          <span>360° Spin ({{ autoRotate ? "ON" : "OFF" }})</span>
         </button>
       </div>
     </div>

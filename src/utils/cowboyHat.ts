@@ -1,5 +1,5 @@
-import * as THREE from 'three';
-import type { MaterialModeId } from '../types/peanut';
+import * as THREE from "three";
+import type { MaterialModeId } from "../types/peanut";
 
 export interface CowboyHatHandle {
   group: THREE.Group;
@@ -25,7 +25,7 @@ function createBrimGeometry(): THREE.BufferGeometry {
   const uvs: number[] = [];
   const indices: number[] = [];
 
-  const rxIn = 0.80;
+  const rxIn = 0.8;
   const rzIn = 0.86;
   const rxOut = 1.48;
   const rzOut = 1.58;
@@ -108,8 +108,8 @@ function createBrimGeometry(): THREE.BufferGeometry {
     indices.push(t2, b2, b1);
   }
 
-  geom.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-  geom.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+  geom.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
+  geom.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
   geom.setIndex(indices);
   geom.computeVertexNormals();
 
@@ -129,7 +129,7 @@ function createCrownGeometry(): THREE.BufferGeometry {
   const indices: number[] = [];
 
   const crownHeight = 0.72;
-  const baseRx = 0.80;
+  const baseRx = 0.8;
   const baseRz = 0.86;
   const topRx = 0.62;
   const topRz = 0.68;
@@ -156,11 +156,11 @@ function createCrownGeometry(): THREE.BufferGeometry {
 
       // Pinch dents on front-left and front-right (z > 0.05, theta around +- 40-75 degrees)
       if (v > 0.25 && v < 0.95 && pz > 0.04) {
-        const pinchHeightWeight = Math.sin(((v - 0.25) / 0.70) * Math.PI);
+        const pinchHeightWeight = Math.sin(((v - 0.25) / 0.7) * Math.PI);
         const pinchAngleWeight = Math.pow(Math.abs(sinT), 1.6) * Math.max(0, cosT);
         const pinchAmount = 0.07 * pinchHeightWeight * pinchAngleWeight;
-        px *= (1.0 - pinchAmount);
-        pz *= (1.0 - pinchAmount * 0.75);
+        px *= 1.0 - pinchAmount;
+        pz *= 1.0 - pinchAmount * 0.75;
       }
 
       // Cattleman crease top profile transition near upper wall
@@ -240,8 +240,8 @@ function createCrownGeometry(): THREE.BufferGeometry {
     }
   }
 
-  geom.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-  geom.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+  geom.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
+  geom.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
   geom.setIndex(indices);
   geom.computeVertexNormals();
 
@@ -289,8 +289,8 @@ function createHatbandGeometry(): THREE.BufferGeometry {
     indices.push(b2, t1, t2);
   }
 
-  geom.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-  geom.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+  geom.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
+  geom.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
   geom.setIndex(indices);
   geom.computeVertexNormals();
 
@@ -321,13 +321,13 @@ function createStarConcho(): THREE.Mesh {
     bevelEnabled: true,
     bevelThickness: 0.002,
     bevelSize: 0.002,
-    bevelSegments: 2
+    bevelSegments: 2,
   });
 
   const mat = new THREE.MeshStandardMaterial({
     color: 0xdeb841,
     roughness: 0.25,
-    metalness: 0.88
+    metalness: 0.88,
   });
 
   const mesh = new THREE.Mesh(geom, mat);
@@ -346,7 +346,7 @@ function easeOutBack(x: number): number {
 
 export function createCowboyHat(): CowboyHatHandle {
   const hatRoot = new THREE.Group();
-  hatRoot.name = 'CowboyHatRoot';
+  hatRoot.name = "CowboyHatRoot";
 
   // Base rest transform on peanut's head (sits jaunty over top tuft nub)
   const restY = 2.68;
@@ -367,40 +367,40 @@ export function createCowboyHat(): CowboyHatHandle {
     sheen: 0.55,
     sheenColor: new THREE.Color(0xb57a4a),
     sheenRoughness: 0.65,
-    side: THREE.DoubleSide
+    side: THREE.DoubleSide,
   });
 
   const hatSmoothMaterial = new THREE.MeshStandardMaterial({
     color: 0x824922,
     roughness: 0.32,
     metalness: 0.08,
-    side: THREE.DoubleSide
+    side: THREE.DoubleSide,
   });
 
   const hatWireframeMaterial = new THREE.MeshBasicMaterial({
     color: 0xc87532,
     wireframe: true,
-    side: THREE.DoubleSide
+    side: THREE.DoubleSide,
   });
 
   // Dark stitched chocolate hatband
   const bandFeltMaterial = new THREE.MeshStandardMaterial({
     color: 0x241309,
-    roughness: 0.70,
+    roughness: 0.7,
     metalness: 0.06,
-    side: THREE.DoubleSide
+    side: THREE.DoubleSide,
   });
 
   const bandWireframeMaterial = new THREE.MeshBasicMaterial({
     color: 0x5a2d12,
-    wireframe: true
+    wireframe: true,
   });
 
   // 2. Geometries & Meshes
   const brimGeom = createBrimGeometry();
   const brimMesh: THREE.Mesh<THREE.BufferGeometry, THREE.Material> = new THREE.Mesh(
     brimGeom,
-    hatFeltMaterial
+    hatFeltMaterial,
   );
   brimMesh.castShadow = true;
   brimMesh.receiveShadow = true;
@@ -409,7 +409,7 @@ export function createCowboyHat(): CowboyHatHandle {
   const crownGeom = createCrownGeometry();
   const crownMesh: THREE.Mesh<THREE.BufferGeometry, THREE.Material> = new THREE.Mesh(
     crownGeom,
-    hatFeltMaterial
+    hatFeltMaterial,
   );
   crownMesh.castShadow = true;
   crownMesh.receiveShadow = true;
@@ -418,7 +418,7 @@ export function createCowboyHat(): CowboyHatHandle {
   const bandGeom = createHatbandGeometry();
   const bandMesh: THREE.Mesh<THREE.BufferGeometry, THREE.Material> = new THREE.Mesh(
     bandGeom,
-    bandFeltMaterial
+    bandFeltMaterial,
   );
   bandMesh.castShadow = true;
   bandMesh.receiveShadow = true;
@@ -440,11 +440,11 @@ export function createCowboyHat(): CowboyHatHandle {
   const animSpeed = 4.2; // ~0.24s transition duration
 
   function setMaterialMode(mode: MaterialModeId) {
-    if (mode === 'fleece') {
+    if (mode === "fleece") {
       brimMesh.material = hatFeltMaterial;
       crownMesh.material = hatFeltMaterial;
       bandMesh.material = bandFeltMaterial;
-    } else if (mode === 'smooth') {
+    } else if (mode === "smooth") {
       brimMesh.material = hatSmoothMaterial;
       crownMesh.material = hatSmoothMaterial;
       bandMesh.material = bandFeltMaterial;
@@ -533,6 +533,6 @@ export function createCowboyHat(): CowboyHatHandle {
     dispose,
     get isVisible() {
       return isVisible;
-    }
+    },
   };
 }

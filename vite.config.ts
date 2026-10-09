@@ -1,9 +1,9 @@
-import vue from '@vitejs/plugin-vue'
-import { defineConfig } from 'vite'
+import vue from "@vitejs/plugin-vue";
+import { defineConfig } from "vite";
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: process.env.BASE_PATH || './',
+  base: process.env.BASE_PATH || "./",
   plugins: [vue()],
   build: {
     chunkSizeWarningLimit: 700,
@@ -12,12 +12,12 @@ export default defineConfig({
         codeSplitting: {
           groups: [
             {
-              name: 'three',
+              name: "three",
               test: /node_modules[\\/]three/,
               priority: 20,
             },
             {
-              name: 'vue',
+              name: "vue",
               test: /node_modules[\\/](vue|@vue)/,
               priority: 10,
             },
@@ -26,4 +26,4 @@ export default defineConfig({
       },
     },
   },
-})
+});

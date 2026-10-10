@@ -56,9 +56,8 @@ function stopActiveYodel() {
   isYodeling.value = false;
 }
 
-watch(cowboyMode, (active) => {
+function startYodel() {
   stopActiveYodel();
-  if (!active) return;
 
   const yodel = playYodel();
   activeYodel = yodel;
@@ -77,19 +76,25 @@ watch(cowboyMode, (active) => {
     activeYodel = null;
     isYodeling.value = false;
   });
-});
+}
 const viewerRef = useTemplateRef<InstanceType<typeof PeanutViewer>>("viewerRef");
 function handleBirthdayMode(val: boolean) {
   birthdayMode.value = val;
   if (val) {
-    cowboyMode.value = false;
+    handleCowboyMode(false);
   }
 }
 
 function handleCowboyMode(val: boolean) {
+  if (cowboyMode.value === val) return;
+
   cowboyMode.value = val;
   if (val) {
     birthdayMode.value = false;
+    // Mobile browsers require media playback to begin in the input event handler.
+    startYodel();
+  } else {
+    stopActiveYodel();
   }
 }
 

@@ -36,3 +36,6 @@ currently disabled while their geometry and fit are refined.
 [“Yodel” by Astounded](https://freesound.org/people/Astounded/sounds/484841/),
 a human vocal performance released under
 [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/).
+
+Entering Cowboy Mode starts the yodel directly from the activating click or
+keyboard event so playback remains permitted by mobile browser audio policies.

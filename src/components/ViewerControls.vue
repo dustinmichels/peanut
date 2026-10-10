@@ -167,29 +167,32 @@ function onFuzzChange(event: Event) {
           type="button"
           class="chip-btn"
           :class="{ 'chip-btn-active': cowboyMode }"
+          :aria-pressed="cowboyMode"
           @click="emit('toggle:cowboyMode')"
         >
           <span class="chip-icon">🤠</span>
-          <span>Cowboy Mode ({{ cowboyMode ? "ON" : "OFF" }})</span>
+          <span>Cowboy Mode</span>
         </button>
         <button
           type="button"
           class="chip-btn"
           :class="{ 'chip-btn-active': breathing }"
+          :aria-pressed="breathing"
           @click="emit('toggle:breathing')"
         >
           <span class="chip-icon">🫁</span>
-          <span>Breathe ({{ breathing ? "ON" : "OFF" }})</span>
+          <span>Breathe</span>
         </button>
 
         <button
           type="button"
           class="chip-btn"
           :class="{ 'chip-btn-active': autoRotate }"
+          :aria-pressed="autoRotate"
           @click="emit('toggle:autoRotate')"
         >
           <span class="chip-icon">🔄</span>
-          <span>360° Spin ({{ autoRotate ? "ON" : "OFF" }})</span>
+          <span>360° Spin</span>
         </button>
       </div>
     </div>

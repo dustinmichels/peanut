@@ -13,6 +13,11 @@ bun run build
 bun run preview
 ```
 
+## Poetry
+
+Poetry lines come from [PoetryDB](https://poetrydb.org/). If the request fails or
+times out, the bundled collection in `src/data/poetryLines.ts` is used instead.
+
 ## Birthday Mode
 
 Birthday Mode flashes the purple party hat pom-pom yellow-white on the three
@@ -39,3 +44,8 @@ a human vocal performance released under
 
 Entering Cowboy Mode starts the yodel directly from the activating click or
 keyboard event so playback remains permitted by mobile browser audio policies.
+GitHub Pages supplies the repository base path during the build; Vite normalizes
+it with a trailing slash so runtime-loaded audio resolves under that path.
+
+While the yodel plays, musical notes rise around Peanut's mouth and cowboy hat.
+Reduced-motion preferences keep the notes visible without the floating animation.

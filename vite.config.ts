@@ -1,9 +1,12 @@
 import vue from "@vitejs/plugin-vue";
 import { defineConfig } from "vite";
 
+const configuredBase = process.env.BASE_PATH;
+const base = configuredBase ? `${configuredBase.replace(/\/+$/, "")}/` : "./";
+
 // https://vite.dev/config/
 export default defineConfig({
-  base: process.env.BASE_PATH || "./",
+  base,
   plugins: [vue()],
   build: {
     chunkSizeWarningLimit: 700,

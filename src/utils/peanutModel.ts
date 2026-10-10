@@ -10,6 +10,7 @@ import { createCowboyHat } from "./cowboyHat";
 import { createCowboyBoots } from "./cowboyBoots";
 import { createBirthdayHat } from "./birthdayHat";
 import { createSillyMustache } from "./sillyMustache";
+import { createYodelNotes } from "./yodelNotes";
 import type { MaterialModeId } from "../types/peanut";
 export interface PeanutModelHandle {
   group: THREE.Group;
@@ -671,9 +672,13 @@ export function createPeanutModel(effectsRoot: THREE.Object3D): PeanutModelHandl
   bodyContainer.add(smileMesh);
   bodyContainer.add(yodelMouthMesh);
 
+  const yodelNotesHandle = createYodelNotes();
+  bodyContainer.add(yodelNotesHandle.group);
+
   function setYodeling(yodeling: boolean) {
     smileMesh.visible = !yodeling;
     yodelMouthMesh.visible = yodeling;
+    yodelNotesHandle.setVisible(yodeling);
   }
 
   // 4. Corduroy Legs & Booties
@@ -1020,7 +1025,8 @@ export function createPeanutModel(effectsRoot: THREE.Object3D): PeanutModelHandl
         if (leftLeg.position.y < 0.002) leftLeg.position.y = 0.002;
       }
     }
-    birthdayHatHandle.update(deltaSeconds);
+    birthdayHatHandle.update(deltaSeconds, jumpProgress);
+    yodelNotesHandle.update(time);
   }
 
   function dispose() {
@@ -1031,6 +1037,7 @@ export function createPeanutModel(effectsRoot: THREE.Object3D): PeanutModelHandl
     smileMesh.geometry.dispose();
     yodelMouthMesh.geometry.dispose();
     mouthThreadMaterial.dispose();
+    yodelNotesHandle.dispose();
     fleeceTextures.map.dispose();
     fleeceTextures.normalMap.dispose();
     fleeceTextures.roughnessMap.dispose();

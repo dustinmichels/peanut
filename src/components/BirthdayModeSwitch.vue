@@ -46,9 +46,6 @@ function onKeydown(e: KeyboardEvent) {
           🥳
         </span>
         <span class="birthday-title">Birthday Mode</span>
-        <span class="birthday-status-badge" :class="{ 'badge-active': modelValue }">
-          {{ modelValue ? "ON" : "OFF" }}
-        </span>
       </div>
 
       <div
@@ -188,26 +185,6 @@ function onKeydown(e: KeyboardEvent) {
   color: #0b2545;
 }
 
-.birthday-status-badge {
-  font-family:
-    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
-    monospace;
-  font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  padding: 0.16rem 0.44rem;
-  border-radius: 9999px;
-  background: #ece8e1;
-  color: #7a7065;
-  transition: all 0.25s ease;
-  line-height: 1.1;
-}
-
-.badge-active {
-  background: linear-gradient(135deg, #00a8e8, #8a5ff2);
-  color: #ffffff;
-  box-shadow: 0 2px 8px rgba(0, 168, 232, 0.4);
-}
 
 /* Switch control */
 .switch-control {

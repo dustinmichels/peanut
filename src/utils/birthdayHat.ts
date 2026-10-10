@@ -2,13 +2,14 @@ import * as THREE from "three";
 import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import type { MaterialModeId } from "../types/peanut";
 import { createConfettiEffect, type ConfettiEffectHandle } from "./confettiEffect";
+import { getHatJumpOffset } from "./cowboyHat";
 
 export interface BirthdayHatHandle {
   group: THREE.Group;
   setVisible: (visible: boolean) => void;
   toggle: () => boolean;
   setMaterialMode: (mode: MaterialModeId) => void;
-  update: (deltaSeconds: number) => void;
+  update: (deltaSeconds: number, jumpProgress?: number) => void;
   triggerConfetti: () => void;
   dispose: () => void;
   readonly isVisible: boolean;
@@ -483,7 +484,7 @@ export function createBirthdayHat(
     return isVisible;
   }
 
-  function update(deltaSeconds: number) {
+  function update(deltaSeconds: number, jumpProgress = 0) {
     const dt = Math.min(deltaSeconds, 0.1);
 
     // Flash the pom-pom at 3, 2, and 1, then launch the confetti.
@@ -517,8 +518,8 @@ export function createBirthdayHat(
     if (!hatRoot.visible) return;
 
     if (animProgress >= 1.0) {
-      // Resting on Peanut's head over the bean
-      hatRoot.position.set(restX, restY, restZ);
+      const { liftY, tiltX, tiltZ } = getHatJumpOffset(jumpProgress);
+      hatRoot.position.set(restX, restY + liftY, restZ);
       if (popperRecoilTimer > 0) {
         popperRecoilTimer = Math.max(0, popperRecoilTimer - dt);
         // Party popper recoil spring
@@ -527,8 +528,8 @@ export function createBirthdayHat(
       } else {
         hatRoot.scale.set(1, 1, 1);
       }
-      hatRoot.rotation.x = restRotX;
-      hatRoot.rotation.z = restRotZ;
+      hatRoot.rotation.x = restRotX + tiltX;
+      hatRoot.rotation.z = restRotZ + tiltZ;
     } else {
       // Springy pop-in or lift-off
       const eased = easeOutBack(animProgress);

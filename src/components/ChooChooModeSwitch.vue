@@ -30,9 +30,6 @@ function onKeydown(e: KeyboardEvent) {
           🥸
         </span>
         <span class="choochoo-title">Choo-Choo Mode</span>
-        <span class="choochoo-status-badge" :class="{ 'badge-active': model }">
-          {{ model ? "ON" : "OFF" }}
-        </span>
       </div>
 
       <div
@@ -168,27 +165,6 @@ function onKeydown(e: KeyboardEvent) {
   letter-spacing: -0.01em;
 }
 
-.choochoo-status-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-family: "Fredoka", "Nunito", sans-serif;
-  font-size: 0.66rem;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  padding: 0.16rem 0.5rem;
-  border-radius: 9999px;
-  background: rgba(89, 22, 28, 0.08);
-  color: #8c2a34;
-  transition: all 0.25s ease;
-}
-
-.badge-active {
-  background: linear-gradient(135deg, #ffb6d9 0%, #ff70b8 100%);
-  color: #6b123f;
-  font-weight: 900;
-  box-shadow: 0 1px 4px rgba(255, 63, 155, 0.28);
-}
 
 /* Switch control */
 .switch-control {

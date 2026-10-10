@@ -6,7 +6,7 @@ import CowboyModeSwitch from "./components/CowboyModeSwitch.vue";
 import BirthdayModeSwitch from "./components/BirthdayModeSwitch.vue";
 // import ChooChooModeSwitch from "./components/ChooChooModeSwitch.vue";
 import PoetryBubble from "./components/PoetryBubble.vue";
-import { getRandomPoetryLine, type PoetryQuote } from "./data/poetryLines";
+import { getPoetryLine, type PoetryQuote } from "./data/poetryLines";
 import { playYodel, type YodelHandle } from "./utils/yodelAudio";
 
 const cowboyMode = shallowRef(false);
@@ -24,8 +24,8 @@ let bubbleTimer: ReturnType<typeof setTimeout> | null = null;
 let yodelMouthTimer: ReturnType<typeof setTimeout> | null = null;
 let activeYodel: YodelHandle | null = null;
 
-function showNewPoem() {
-  const result = getRandomPoetryLine(currentQuoteIndex);
+async function showNewPoem() {
+  const result = await getPoetryLine(currentQuoteIndex);
   currentQuote.value = result.quote;
   currentQuoteIndex = result.index;
   showPoetryBubble.value = true;

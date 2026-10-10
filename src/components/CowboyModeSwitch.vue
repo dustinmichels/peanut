@@ -42,9 +42,6 @@ function onKeydown(e: KeyboardEvent) {
           🤠
         </span>
         <span class="cowboy-title">Cowboy Mode</span>
-        <span class="cowboy-status-badge" :class="{ 'badge-active': modelValue }">
-          {{ modelValue ? "ON" : "OFF" }}
-        </span>
       </div>
 
       <div
@@ -178,27 +175,6 @@ function onKeydown(e: KeyboardEvent) {
   letter-spacing: -0.01em;
 }
 
-.cowboy-status-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-family: "Fredoka", "Nunito", sans-serif;
-  font-size: 0.66rem;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  padding: 0.16rem 0.5rem;
-  border-radius: 9999px;
-  background: rgba(85, 51, 25, 0.08);
-  color: #7d583b;
-  transition: all 0.25s ease;
-}
-
-.badge-active {
-  background: linear-gradient(135deg, #f8cf48 0%, #e8ba22 100%);
-  color: #452107;
-  font-weight: 900;
-  box-shadow: 0 1px 4px rgba(116, 62, 24, 0.25);
-}
 
 /* Switch control */
 .switch-control {

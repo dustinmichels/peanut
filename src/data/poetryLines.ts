@@ -1204,3 +1204,46 @@ export function getRandomPoetryLine(excludeIndex?: number): { quote: PoetryQuote
 
   return { quote: POETRY_LINES[index], index };
 }
+
+interface PoetryDbPoem {
+  title: string;
+  author: string;
+  lines: string[];
+}
+
+/**
+ * Fetches a random line from PoetryDB, falling back to the bundled collection.
+ */
+export async function getPoetryLine(
+  excludeIndex?: number,
+): Promise<{ quote: PoetryQuote; index?: number }> {
+  try {
+    const response = await fetch("https://poetrydb.org/random/1", {
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!response.ok) throw new Error(`PoetryDB returned ${response.status}`);
+
+    const poems: unknown = await response.json();
+    const poem = Array.isArray(poems) ? (poems[0] as Partial<PoetryDbPoem> | undefined) : undefined;
+    const lines = Array.isArray(poem?.lines)
+      ? poem.lines.filter(
+          (line): line is string =>
+            typeof line === "string" && line.trim().length > 0 && line.trim().length <= 180,
+        )
+      : [];
+
+    if (typeof poem?.author !== "string" || typeof poem.title !== "string" || lines.length === 0) {
+      throw new Error("PoetryDB returned an invalid poem");
+    }
+
+    return {
+      quote: {
+        line: lines[Math.floor(Math.random() * lines.length)].trim(),
+        poet: poem.author.trim(),
+        work: poem.title.trim(),
+      },
+    };
+  } catch {
+    return getRandomPoetryLine(excludeIndex);
+  }
+}
